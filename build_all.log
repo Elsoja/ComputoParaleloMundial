@@ -1,0 +1,15 @@
+nohup: ignoring input
+time="2025-10-05T22:44:14-07:00" level=warning msg="The cgroupv2 manager is set to systemd but there is no systemd user session available"
+time="2025-10-05T22:44:14-07:00" level=warning msg="For using systemd, you may need to log in using a user session"
+time="2025-10-05T22:44:14-07:00" level=warning msg="Alternatively, you can enable lingering with: `loginctl enable-linger 1000` (possibly as root)"
+time="2025-10-05T22:44:14-07:00" level=warning msg="Falling back to --cgroup-manager=cgroupfs"
+[1/2] STEP 1/11: FROM docker.io/library/debian:bookworm AS builder
+Trying to pull docker.io/library/debian:bookworm...
+Getting image source signatures
+Copying blob sha256:c6b11972fd12973831818babf60f1ffc1c4047507943d132dffc612884022858
+Copying config sha256:4ffc839c7aa5821ee11804d75c6fa61019cfe9323e458d721739d20e5aaa7953
+Writing manifest to image destination
+[1/2] STEP 2/11: RUN apt-get update && apt-get install -y     build-essential     cmake     git     ninja-build     pkg-config     libpq-dev     libssl-dev     curl     zip     unzip     tar     bison     flex     autoconf     automake     libtool     make     && rm -rf /var/lib/apt/lists/*
+error running container: from /usr/bin/crun creating container for [/bin/sh -c apt-get update && apt-get install -y     build-essential     cmake     git     ninja-build     pkg-config     libpq-dev     libssl-dev     curl     zip     unzip     tar     bison     flex     autoconf     automake     libtool     make     && rm -rf /var/lib/apt/lists/*]: sd-bus call: Interactive authentication required.: Permission denied
+: exit status 1
+Error: building at STEP "RUN apt-get update && apt-get install -y     build-essential     cmake     git     ninja-build     pkg-config     libpq-dev     libssl-dev     curl     zip     unzip     tar     bison     flex     autoconf     automake     libtool     make     && rm -rf /var/lib/apt/lists/*": while running runtime: exit status 1
