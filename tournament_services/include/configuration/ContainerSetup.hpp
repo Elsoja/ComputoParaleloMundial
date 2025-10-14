@@ -9,6 +9,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <memory>
+#include <string> // CAMBIO: Incluir string
 
 #include "persistence/repository/IRepository.hpp"
 #include "persistence/repository/TeamRepository.hpp"
@@ -52,14 +53,14 @@ namespace config {
         builder.registerType<QueueResolver>().as<IResolver<IQueueMessageProducer> >().named("queueResolver").
                 singleInstance();
 
-        builder.registerType<TeamRepository>().as<IRepository<domain::Team, std::string_view> >().singleInstance();
+        // CAMBIO: Corregido de std::string_view a std::string
+        builder.registerType<TeamRepository>().as<IRepository<domain::Team, std::string>>().singleInstance();
+        
         builder.registerType<GroupRepository>().as<IRepository<domain::Group, std::string>>().singleInstance();
+        builder.registerType<TournamentRepository>().as<IRepository<domain::Tournament, std::string>>().singleInstance();
 
         builder.registerType<TeamDelegate>().as<ITeamDelegate>().singleInstance();
         builder.registerType<TeamController>().singleInstance();
-
-        builder.registerType<TournamentRepository>().as<IRepository<domain::Tournament, std::string> >().
-                singleInstance();
 
         builder.registerType<TournamentDelegate>()
                 .as<ITournamentDelegate>()

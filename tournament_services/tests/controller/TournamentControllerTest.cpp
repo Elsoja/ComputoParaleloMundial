@@ -2,7 +2,6 @@
 #include "domain/Team.hpp"
 #include "controller/TournamentController.hpp"
 
-
 TEST(TournamentControllerTest, CreateTournament) {
     std::shared_ptr<TournamentController> tournamentController;
     tournamentController->ReadAll();

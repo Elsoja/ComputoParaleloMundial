@@ -1,24 +1,30 @@
-//
-// Created by tsuny on 8/31/25.
-//
+#ifndef RESTAPI_TOURNAMENTDELEGATE_HPP
+#define RESTAPI_TOURNAMENTDELEGATE_HPP
 
-#ifndef TOURNAMENTS_TOURNAMENTDELEGATE_HPP
-#define TOURNAMENTS_TOURNAMENTDELEGATE_HPP
-
-#include <string>
-
-#include "cms/QueueMessageProducer.hpp"
 #include "delegate/ITournamentDelegate.hpp"
 #include "persistence/repository/IRepository.hpp"
+#include "cms/QueueMessageProducer.hpp"
+#include <memory>
 
-class TournamentDelegate : public ITournamentDelegate{
+// Forward declaration para evitar include circular si es necesario
+namespace domain {
+    class Tournament;
+}
+
+class TournamentDelegate : public ITournamentDelegate {
     std::shared_ptr<IRepository<domain::Tournament, std::string>> tournamentRepository;
     std::shared_ptr<QueueMessageProducer> producer;
+
 public:
+    // El constructor que ya tenías
     explicit TournamentDelegate(std::shared_ptr<IRepository<domain::Tournament, std::string>> repository, std::shared_ptr<QueueMessageProducer> producer);
 
-    std::string CreateTournament(std::shared_ptr<domain::Tournament> tournament) override;
+    ~TournamentDelegate() override = default;
+
+    // CAMBIO: La firma ahora es consistente y devuelve std::expected
+    std::expected<std::string, SaveError> CreateTournament(std::shared_ptr<domain::Tournament> tournament) override;
+
     std::vector<std::shared_ptr<domain::Tournament>> ReadAll() override;
 };
 
-#endif //TOURNAMENTS_TOURNAMENTDELEGATE_HPP
+#endif //RESTAPI_TOURNAMENTDELEGATE_HPP

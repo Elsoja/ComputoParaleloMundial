@@ -4,7 +4,11 @@
 
 #ifndef TOURNAMENTS_TOURNAMENTREPOSITORY_HPP
 #define TOURNAMENTS_TOURNAMENTREPOSITORY_HPP
+
 #include <string>
+#include <vector>
+#include <memory>
+#include <optional> // CAMBIO: Incluir para std::optional
 
 #include "IRepository.hpp"
 #include "domain/Tournament.hpp"
@@ -15,9 +19,13 @@ class TournamentRepository : public IRepository<domain::Tournament, std::string>
     std::shared_ptr<IDbConnectionProvider> connectionProvider;
 public:
     explicit TournamentRepository(std::shared_ptr<IDbConnectionProvider> connectionProvider);
+    
     std::shared_ptr<domain::Tournament> ReadById(std::string id) override;
-    std::string Create (const domain::Tournament & entity) override;
-    std::string Update (const domain::Tournament & entity) override;
+    
+    // CAMBIO: La firma ahora devuelve std::optional<std::string> para coincidir con la interfaz
+    std::optional<std::string> Create(const domain::Tournament & entity) override;
+    
+    std::string Update(const domain::Tournament & entity) override;
     void Delete(std::string id) override;
     std::vector<std::shared_ptr<domain::Tournament>> ReadAll() override;
 };

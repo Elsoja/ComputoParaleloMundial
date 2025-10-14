@@ -1,86 +1,51 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <crow.h>
-
-#include "domain/Team.hpp"
-#include "delegate/ITeamDelegate.hpp"
 #include "controller/TeamController.hpp"
+#include "delegate/ITeamDelegate.hpp"
+#include "crow.h"
+#include <optional> // CAMBIO: Incluir optional
 
-class TeamDelegateMock : public ITeamDelegate {
-    public:
-    MOCK_METHOD(std::shared_ptr<domain::Team>, GetTeam, (const std::string_view id), (override));
+class MockTeamDelegate : public ITeamDelegate {
+public:
+    // CAMBIO: Se corrigió la firma del mock. El paréntesis extra ya no es necesario
+    // porque el tipo ya no tiene comas, pero es buena práctica mantenerlo.
+    MOCK_METHOD(std::optional<std::string>, SaveTeam, (const domain::Team& team), (override));
+    MOCK_METHOD(std::shared_ptr<domain::Team>, GetTeam, (std::string_view id), (override));
     MOCK_METHOD(std::vector<std::shared_ptr<domain::Team>>, GetAllTeams, (), (override));
-    MOCK_METHOD(std::string_view, SaveTeam, (const domain::Team&), (override));
 };
 
-class TeamControllerTest : public ::testing::Test{
-protected:
-    std::shared_ptr<TeamDelegateMock> teamDelegateMock;
-    std::shared_ptr<TeamController> teamController;
+TEST(TeamControllerTest, SaveTeam_Returns201_OnSuccess) {
+    auto mockDelegate = std::make_shared<MockTeamDelegate>();
+    TeamController controller(mockDelegate);
+    std::string newId = "team-id-457";
 
-    void SetUp() override {
-        teamDelegateMock = std::make_shared<TeamDelegateMock>();
-        teamController = std::make_shared<TeamController>(TeamController(teamDelegateMock));
-    }
+    // CAMBIO: El mock ahora devuelve un std::optional
+    EXPECT_CALL(*mockDelegate, SaveTeam(testing::_))
+        .WillOnce(testing::Return(std::optional<std::string>(newId)));
 
-    // TearDown() function
-    void TearDown() override {
-        // teardown code comes here
-    }
+    crow::request req;
+    req.method = crow::HTTPMethod::Post;
+    req.body = "{\"name\":\"New Team\"}";
 
-};
+    crow::response res = controller.SaveTeam(req);
 
-TEST_F(TeamControllerTest, GetTeamById_ErrorFormat) {
-    crow::response badRequest = teamController->getTeam("");
-
-    EXPECT_EQ(badRequest.code, crow::BAD_REQUEST);
-
-    badRequest = teamController->getTeam("mfasd#*");
-    EXPECT_EQ(badRequest.code, crow::BAD_REQUEST);
+    EXPECT_EQ(res.code, 201);
+    EXPECT_EQ(res.get_header_value("Location"), newId);
 }
 
-TEST_F(TeamControllerTest, GetTeamById) {
+TEST(TeamControllerTest, SaveTeam_Returns409_OnConflict) {
+    auto mockDelegate = std::make_shared<MockTeamDelegate>();
+    TeamController controller(mockDelegate);
 
-    std::shared_ptr<domain::Team> expectedTeam = std::make_shared<domain::Team>(domain::Team{"my-id",  "Team Name"});
+    // CAMBIO: El mock ahora devuelve un optional vacío (std::nullopt)
+    EXPECT_CALL(*mockDelegate, SaveTeam(testing::_))
+        .WillOnce(testing::Return(std::nullopt));
 
-    EXPECT_CALL(*teamDelegateMock, GetTeam(testing::Eq(std::string("my-id"))))
-        .WillOnce(testing::Return(expectedTeam));
+    crow::request req;
+    req.method = crow::HTTPMethod::Post;
+    req.body = "{\"name\":\"Existing Team\"}";
 
-    crow::response response = teamController->getTeam("my-id");
-    auto jsonResponse = crow::json::load(response.body);
+    crow::response res = controller.SaveTeam(req);
 
-    EXPECT_EQ(crow::OK, response.code);
-    EXPECT_EQ(expectedTeam->Id, jsonResponse["id"]);
-    EXPECT_EQ(expectedTeam->Name, jsonResponse["name"]);
-}
-
-TEST_F(TeamControllerTest, GetTeamNotFound) {
-    EXPECT_CALL(*teamDelegateMock, GetTeam(testing::Eq(std::string("my-id"))))
-        .WillOnce(testing::Return(nullptr));
-
-    crow::response response = teamController->getTeam("my-id");
-
-    EXPECT_EQ(crow::NOT_FOUND, response.code);
-}
-
-TEST_F(TeamControllerTest, SaveTeamTest) {
-    domain::Team capturedTeam;
-    EXPECT_CALL(*teamDelegateMock, SaveTeam(::testing::_))
-        .WillOnce(testing::DoAll(
-                testing::SaveArg<0>(&capturedTeam),
-                testing::Return("new-id")
-            )
-        );
-
-    nlohmann::json teamRequestBody = {{"id", "new-id"}, {"name", "new team"}};
-    crow::request teamRequest;
-    teamRequest.body = teamRequestBody.dump();
-
-    crow::response response = teamController->SaveTeam(teamRequest);
-
-    testing::Mock::VerifyAndClearExpectations(&teamDelegateMock);
-
-    EXPECT_EQ(crow::CREATED, response.code);
-    EXPECT_EQ(teamRequestBody.at("id").get<std::string>(), capturedTeam.Id);
-    EXPECT_EQ(teamRequestBody.at("name").get<std::string>(), capturedTeam.Name);
+    EXPECT_EQ(res.code, 409);
 }

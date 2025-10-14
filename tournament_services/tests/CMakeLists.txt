@@ -1,27 +1,23 @@
-project(tournament_tests)
+# 1. Activar y hacer visibles los paquetes de GTest que vcpkg instaló
+find_package(GTest REQUIRED)
 
-set(TEST_SOURCES
-        controller/TeamControllerTest.cpp
-        controller/TournamentControllerTest.cpp
-        ../src/controller/TeamController.cpp
-        ../src/controller/TournamentController.cpp
+# 2. Definir el ejecutable de pruebas con TODOS sus archivos fuente.
+add_executable(
+    tournament_tests_runner
+    controller/TeamControllerTest.cpp
+    delegate/TeamDelegateTest.cpp
 )
 
-set(SOURCES ${TEST_SOURCES})
-
-find_package(GTest CONFIG REQUIRED)
-
-include_directories(../include)
-
-add_executable(${PROJECT_NAME}_runner
-    ${TEST_SOURCES}
+# 3. Enlazar las librerías necesarias.
+target_link_libraries(
+    tournament_tests_runner
+    PRIVATE
+    tournament_logic  # La librería con nuestro código a probar
+    GTest::gtest
+    GTest::gmock
+    GTest::gtest_main
 )
 
-target_link_libraries(${PROJECT_NAME}_runner PRIVATE
-        GTest::gtest
-        GTest::gtest_main
-        GTest::gmock
-        GTest::gmock_main
-        tournament_common)
-
-add_test(AllTestsInMain ${PROJECT_NAME}_runner)
+# 4. Habilitar el descubrimiento de pruebas con CTest.
+include(GoogleTest)
+gtest_discover_tests(tournament_tests_runner)

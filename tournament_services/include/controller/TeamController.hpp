@@ -1,29 +1,44 @@
-//
-// Created by developer on 8/22/25.
-//
-
-#ifndef RESTAPI_TEAM_CONTROLLER_HPP
-#define RESTAPI_TEAM_CONTROLLER_HPP
-
-#include <string>
-#include <crow.h>
-#include <nlohmann/json.hpp>
-#include <memory>
-#include <regex>
+#ifndef RESTAPI_TEAMCONTROLLER_HPP
+#define RESTAPI_TEAMCONTROLLER_HPP
 
 #include "delegate/ITeamDelegate.hpp"
-
-static const std::regex ID_VALUE("[A-Za-z0-9\\-]+");
+#include "domain/Team.hpp"
+#include <nlohmann/json.hpp>
+#include "crow.h"
+#include <memory>
+#include <string>
 
 class TeamController {
     std::shared_ptr<ITeamDelegate> teamDelegate;
 public:
     explicit TeamController(const std::shared_ptr<ITeamDelegate>& teamDelegate);
 
-    [[nodiscard]] crow::response getTeam(const std::string& teamId) const;
-    [[nodiscard]] crow::response getAllTeams() const;
-    [[nodiscard]] crow::response SaveTeam(const crow::request& request) const;
+    crow::response getTeam(const std::string& teamId) const;
+    crow::response getAllTeams() const;
+
+    // CAMBIO: La implementación de SaveTeam se mueve aquí y se marca como inline
+    inline crow::response SaveTeam(const crow::request& request) const {
+        if (!nlohmann::json::accept(request.body)) {
+            return crow::response{crow::BAD_REQUEST, "{\"error\":\"Invalid JSON format\"}"};
+        }
+        try {
+            auto requestBody = nlohmann::json::parse(request.body);
+            domain::Team team;
+            from_json(requestBody, team);
+
+            auto result = teamDelegate->SaveTeam(team);
+
+            if (result) {
+                crow::response response(crow::CREATED);
+                response.add_header("Location", result.value());
+                return response;
+            } else {
+                return crow::response{crow::CONFLICT, "{\"error\":\"Team already exists\"}"};
+            }
+        } catch (const nlohmann::json::exception& e) {
+            return crow::response{crow::BAD_REQUEST, "{\"error\":\"JSON parsing error\"}"};
+        }
+    }
 };
 
-
-#endif //RESTAPI_TEAM_CONTROLLER_HPP
+#endif // RESTAPI_TEAMCONTROLLER_HPP

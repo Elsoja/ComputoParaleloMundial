@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <nlohmann/json.hpp>
 
 #include "domain/Group.hpp"
 #include "domain/Match.hpp"
@@ -22,33 +24,15 @@ namespace domain {
             this->maxTeamsPerGroup = maxTeamsPerGroup;
             this->type = tournamentType;
         }
-
-        int NumberOfGroups() const {
-            return this->numberOfGroups;
-        }
-        int & NumberOfGroups() {
-            return this->numberOfGroups;
-        }
-
-        int MaxTeamsPerGroup() const {
-            return this->maxTeamsPerGroup;
-        }
-
-        int & MaxTeamsPerGroup() {
-            return this->maxTeamsPerGroup;
-        }
-
-        TournamentType Type() const {
-            return this->type;
-        }
-
-        TournamentType & Type() {
-            return this->type;
-        }
+        int NumberOfGroups() const { return this->numberOfGroups; }
+        int& NumberOfGroups() { return this->numberOfGroups; }
+        int MaxTeamsPerGroup() const { return this->maxTeamsPerGroup; }
+        int& MaxTeamsPerGroup() { return this->maxTeamsPerGroup; }
+        TournamentType Type() const { return this->type; }
+        TournamentType& Type() { return this->type; }
     };
 
-    class Tournament
-    {
+    class Tournament {
         std::string id;
         std::string name;
         TournamentFormat format;
@@ -60,38 +44,43 @@ namespace domain {
             this->name = name;
             this->format = format;
         }
-
-        [[nodiscard]] std::string Id() const {
-            return this->id;
-        }
-
-        std::string& Id() {
-            return this->id;
-        }
-
-        [[nodiscard]] std::string Name() const {
-            return this->name;
-        }
-
-        std::string& Name() {
-            return this->name;
-        }
-
-        [[nodiscard]] TournamentFormat Format() const {
-            return this->format;
-        }
-
-        TournamentFormat & Format () {
-            return this->format;
-        }
-
-        [[nodiscard]] std::vector<Group> & Groups() {
-            return this->groups;
-        }
-
-        [[nodiscard]] std::vector<Match> Matches() const {
-            return this->matches;
-        }
+        [[nodiscard]] std::string Id() const { return this->id; }
+        std::string& Id() { return this->id; }
+        [[nodiscard]] std::string Name() const { return this->name; }
+        std::string& Name() { return this->name; }
+        [[nodiscard]] const TournamentFormat& Format() const { return this->format; }
+        TournamentFormat& Format() { return this->format; }
+        std::vector<Group>& Groups() { return this->groups; }
+        [[nodiscard]] const std::vector<Match>& Matches() const { return this->matches; }
     };
+
+    // --- Funciones de Serialización JSON ---
+
+    // (Necesitarás añadir la serialización para Match y TournamentType si no la tienes)
+    inline void to_json(nlohmann::json& j, const TournamentFormat& f) { /* ... */ }
+    inline void from_json(const nlohmann::json& j, TournamentFormat& f) { /* ... */ }
+
+    inline void to_json(nlohmann::json& j, const Tournament& t) {
+        j = nlohmann::json{
+            {"id", t.Id()}, 
+            {"name", t.Name()},
+            {"format", t.Format()}
+        };
+    }
+
+    inline void from_json(const nlohmann::json& j, Tournament& t) {
+        t.Id() = j.value("id", "");
+        t.Name() = j.value("name", "");
+        if (j.contains("format"))
+            j.at("format").get_to(t.Format());
+    }
+
+    inline void to_json(nlohmann::json& j, const std::shared_ptr<domain::Tournament>& t) {
+        if (t) {
+            to_json(j, *t);
+        } else {
+            j = nullptr;
+        }
+    }
 }
-#endif
+#endif // DOMAIN_TOURNAMENT_HPP
