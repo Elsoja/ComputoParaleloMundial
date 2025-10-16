@@ -7,5 +7,5 @@ podman exec -i tournament_db psql -U postgres -d postgres < db_script.sql
 
 activemq
 ````
-podman run -d --replace --name artemis --network development -p 61616:61616 -p 8161:8161 -p 5672:5672  apache/activemq-classic:6.1.7
+podman run -d --replace --name ZenonCitio --network development -p 61616:61616 -p 8161:8161 -p 5672:5672  apache/activemq-classic:6.1.7
 ````
