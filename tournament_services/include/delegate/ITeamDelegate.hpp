@@ -5,19 +5,24 @@
 #include <memory>
 #include <string>
 #include <string_view>
-#include <optional> // CAMBIO: Usamos optional en lugar de expected
+#include <expected>
 #include "domain/Team.hpp"
 
 class ITeamDelegate {
 public:
-    // CAMBIO: Eliminamos el enum SaveError, ya no es necesario
+    // Se añade 'NotFound' para errores al actualizar/borrar
+    enum class SaveError { Conflict, NotFound, Unknown }; 
+
     virtual ~ITeamDelegate() = default;
 
-    // CAMBIO: El tipo de retorno ahora es std::optional<std::string>
-    virtual std::optional<std::string> SaveTeam(const domain::Team& team) = 0;
-    
+    // Métodos existentes
+    virtual std::expected<std::string, SaveError> SaveTeam(const domain::Team& team) = 0;
     virtual std::shared_ptr<domain::Team> GetTeam(std::string_view id) = 0;
     virtual std::vector<std::shared_ptr<domain::Team>> GetAllTeams() = 0;
+    
+    // **CAMBIO: Se añaden los nuevos métodos que faltaban**
+    virtual std::expected<void, SaveError> UpdateTeam(std::string_view id, const domain::Team& team) = 0;
+    virtual std::expected<void, SaveError> DeleteTeam(std::string_view id) = 0;
 };
 
-#endif //RESTAPI_ITEAMDELEGATE_HPPP
+#endif //RESTAPI_ITEAMDELEGATE_HPP 

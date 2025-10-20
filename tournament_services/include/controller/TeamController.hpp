@@ -11,12 +11,14 @@
 class TeamController {
     std::shared_ptr<ITeamDelegate> teamDelegate;
 public:
-    explicit TeamController(const std::shared_ptr<ITeamDelegate>& teamDelegate);
+    explicit TeamController(const std::shared_ptr<ITeamDelegate>& delegate);
 
     crow::response getTeam(const std::string& teamId) const;
     crow::response getAllTeams() const;
+    crow::response UpdateTeam(const crow::request& request, const std::string& id) const;
+    crow::response DeleteTeam(const std::string& id) const;
 
-    // CAMBIO: La implementación de SaveTeam se mueve aquí y se marca como inline
+    // La implementación de SaveTeam vive aquí como 'inline'
     inline crow::response SaveTeam(const crow::request& request) const {
         if (!nlohmann::json::accept(request.body)) {
             return crow::response{crow::BAD_REQUEST, "{\"error\":\"Invalid JSON format\"}"};

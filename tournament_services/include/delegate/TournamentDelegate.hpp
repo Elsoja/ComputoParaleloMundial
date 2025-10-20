@@ -6,25 +6,27 @@
 #include "cms/QueueMessageProducer.hpp"
 #include <memory>
 
-// Forward declaration para evitar include circular si es necesario
+// Forward declaration
 namespace domain {
     class Tournament;
 }
 
 class TournamentDelegate : public ITournamentDelegate {
+    // Miembros de la clase
     std::shared_ptr<IRepository<domain::Tournament, std::string>> tournamentRepository;
     std::shared_ptr<QueueMessageProducer> producer;
 
 public:
-    // El constructor que ya tenías
+    // Declaración del constructor
     explicit TournamentDelegate(std::shared_ptr<IRepository<domain::Tournament, std::string>> repository, std::shared_ptr<QueueMessageProducer> producer);
-
     ~TournamentDelegate() override = default;
 
-    // CAMBIO: La firma ahora es consistente y devuelve std::expected
+    // Declaraciones de los métodos del CRUD
     std::expected<std::string, SaveError> CreateTournament(std::shared_ptr<domain::Tournament> tournament) override;
-
-    std::vector<std::shared_ptr<domain::Tournament>> ReadAll() override;
+    std::shared_ptr<domain::Tournament> GetTournament(std::string_view id) override;
+    std::vector<std::shared_ptr<domain::Tournament>> GetAllTournaments() override;
+    std::expected<void, SaveError> UpdateTournament(std::string_view id, const domain::Tournament& tournament) override;
+    std::expected<void, SaveError> DeleteTournament(std::string_view id) override;
 };
 
 #endif //RESTAPI_TOURNAMENTDELEGATE_HPP

@@ -3,21 +3,25 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <expected>
 #include "domain/Tournament.hpp"
 
 class ITournamentDelegate {
 public:
-    enum class SaveError { Conflict, Unknown };
+    enum class SaveError { Conflict, NotFound, Unknown };
     
     virtual ~ITournamentDelegate() = default;
     
-    // CAMBIO: La firma ahora usa CreateTournament y devuelve std::expected
+    // CAMBIO: Se renombró a "CreateTournament" por consistencia
     virtual std::expected<std::string, SaveError> CreateTournament(std::shared_ptr<domain::Tournament> tournament) = 0;
-    
-    virtual std::vector<std::shared_ptr<domain::Tournament>> ReadAll() = 0;
-    // Añade aquí las otras firmas de métodos que necesites (ej. GetTournament)
+    virtual std::shared_ptr<domain::Tournament> GetTournament(std::string_view id) = 0;
+    virtual std::vector<std::shared_ptr<domain::Tournament>> GetAllTournaments() = 0;
+
+    // **NUEVO: Métodos para Update y Delete**
+    virtual std::expected<void, SaveError> UpdateTournament(std::string_view id, const domain::Tournament& tournament) = 0;
+    virtual std::expected<void, SaveError> DeleteTournament(std::string_view id) = 0;
 };
 
 #endif //RESTAPI_ITOURNAMENTDELEGATE_HPP

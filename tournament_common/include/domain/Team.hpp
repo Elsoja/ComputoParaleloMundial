@@ -9,6 +9,11 @@ namespace domain {
     struct Team {
         std::string Id;
         std::string Name;
+
+        // Dos equipos son iguales si su Id y su Name son iguales.
+        bool operator==(const Team& other) const {
+            return Id == other.Id && Name == other.Name;
+        }
     };
 
     // --- Funciones de Serialización JSON ---
@@ -18,7 +23,9 @@ namespace domain {
     }
 
     inline void from_json(const nlohmann::json& j, Team& t) {
-        j.at("id").get_to(t.Id);
+        if (j.contains("id")) {
+            j.at("id").get_to(t.Id);
+        }
         j.at("name").get_to(t.Name);
     }
 
