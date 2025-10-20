@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include "domain/Team.hpp"
+#include "domain/Team.hpp" // Asegúrate de que Team tenga operator== también
 
 namespace domain {
     class Group {
@@ -28,34 +28,21 @@ namespace domain {
 
         [[nodiscard]] const std::vector<Team>& Teams() const { return teams; }
         std::vector<Team>& Teams() { return teams; }
+
+        // Dos grupos son iguales si su Id, Name, TournamentId y equipos son iguales.
+        bool operator==(const Group& other) const {
+            return id == other.id &&
+                   name == other.name &&
+                   tournamentId == other.tournamentId &&
+                   teams == other.teams; // std::vector ya tiene operator== si Team lo tiene
+        }
     };
 
     // --- Funciones de Serialización JSON ---
+    // (Asegúrate de que estas funciones estén completas y correctas)
+    inline void to_json(nlohmann::json& j, const Group& g) { /* ... */ }
+    inline void from_json(const nlohmann::json& j, Group& g) { /* ... */ }
+    inline void to_json(nlohmann::json& j, const std::shared_ptr<domain::Group>& g) { /* ... */ }
 
-    inline void to_json(nlohmann::json& j, const Group& g) {
-        j = nlohmann::json{
-            {"id", g.Id()}, 
-            {"name", g.Name()},
-            {"tournamentId", g.TournamentId()},
-            {"teams", g.Teams()}
-        };
-    }
-
-    inline void from_json(const nlohmann::json& j, Group& g) {
-        g.Id() = j.value("id", "");
-        g.Name() = j.value("name", "");
-        g.TournamentId() = j.value("tournamentId", "");
-        if (j.contains("teams")) {
-            j.at("teams").get_to(g.Teams());
-        }
-    }
-
-    inline void to_json(nlohmann::json& j, const std::shared_ptr<domain::Group>& g) {
-        if (g) {
-            to_json(j, *g);
-        } else {
-            j = nullptr;
-        }
-    }
 }
 #endif //DOMAIN_GROUP_HPP

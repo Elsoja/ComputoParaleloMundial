@@ -4,7 +4,11 @@ find_package(GTest REQUIRED)
 add_executable(
     tournament_tests_runner
     delegate/TeamDelegateTest.cpp
-    # Cuando vuelvas a crear TeamControllerTest.cpp, añádelo aquí
+    controller/TournamentControllerTest.cpp
+    delegate/TournamentDelegateTest.cpp
+    controller/TeamControllerTest.cpp
+    controller/GroupControllerTest.cpp
+    delegate/GroupDelegateTest.cpp
 )
 
 set_target_properties(tournament_tests_runner PROPERTIES CXX_STANDARD 23)

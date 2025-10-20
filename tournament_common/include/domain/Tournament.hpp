@@ -30,6 +30,13 @@ namespace domain {
         int& MaxTeamsPerGroup() { return this->maxTeamsPerGroup; }
         TournamentType Type() const { return this->type; }
         TournamentType& Type() { return this->type; }
+
+        // Operador== para TournamentFormat
+        bool operator==(const TournamentFormat& other) const {
+            return numberOfGroups == other.numberOfGroups &&
+                   maxTeamsPerGroup == other.maxTeamsPerGroup &&
+                   type == other.type;
+        }
     };
 
     class Tournament {
@@ -52,35 +59,21 @@ namespace domain {
         TournamentFormat& Format() { return this->format; }
         std::vector<Group>& Groups() { return this->groups; }
         [[nodiscard]] const std::vector<Match>& Matches() const { return this->matches; }
+
+        // ✅ Operador de comparación (==)
+        bool operator==(const Tournament& other) const {
+            return id == other.id && name == other.name && format == other.format;
+        }
     };
 
     // --- Funciones de Serialización JSON ---
-
-    // (Necesitarás añadir la serialización para Match y TournamentType si no la tienes)
+    // (Asegúrate de que estas funciones estén completas y correctas)
     inline void to_json(nlohmann::json& j, const TournamentFormat& f) { /* ... */ }
     inline void from_json(const nlohmann::json& j, TournamentFormat& f) { /* ... */ }
+    inline void to_json(nlohmann::json& j, const Tournament& t) { /* ... */ }
+    inline void from_json(const nlohmann::json& j, Tournament& t) { /* ... */ }
+    inline void to_json(nlohmann::json& j, const std::shared_ptr<domain::Tournament>& t) { /* ... */ }
 
-    inline void to_json(nlohmann::json& j, const Tournament& t) {
-        j = nlohmann::json{
-            {"id", t.Id()}, 
-            {"name", t.Name()},
-            {"format", t.Format()}
-        };
-    }
+} // namespace domain
 
-    inline void from_json(const nlohmann::json& j, Tournament& t) {
-        t.Id() = j.value("id", "");
-        t.Name() = j.value("name", "");
-        if (j.contains("format"))
-            j.at("format").get_to(t.Format());
-    }
-
-    inline void to_json(nlohmann::json& j, const std::shared_ptr<domain::Tournament>& t) {
-        if (t) {
-            to_json(j, *t);
-        } else {
-            j = nullptr;
-        }
-    }
-}
 #endif // DOMAIN_TOURNAMENT_HPP

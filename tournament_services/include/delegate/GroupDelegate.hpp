@@ -15,13 +15,16 @@
 #include "domain/Group.hpp"
 
 class GroupDelegate : public IGroupDelegate{
-    std::shared_ptr<TournamentRepository> tournamentRepository;
-    std::shared_ptr<GroupRepository> groupRepository;
-    std::shared_ptr<TeamRepository> teamRepository;
+    std::shared_ptr<IRepository<domain::Tournament, std::string>> tournamentRepository;
+    std::shared_ptr<IRepository<domain::Group, std::string>> groupRepository;
+    std::shared_ptr<IRepository<domain::Team, std::string>> teamRepository;
 
 public:
-    GroupDelegate(const std::shared_ptr<TournamentRepository>& tournamentRepository, const std::shared_ptr<GroupRepository>& groupRepository, const std::shared_ptr<TeamRepository>& teamRepository);
-    
+   GroupDelegate(
+        const std::shared_ptr<IRepository<domain::Tournament, std::string>>& tournamentRepo,
+        const std::shared_ptr<IRepository<domain::Group, std::string>>& groupRepo,
+        const std::shared_ptr<IRepository<domain::Team, std::string>>& teamRepo);
+
     std::expected<std::string, std::string> CreateGroup(const std::string_view& tournamentId, const domain::Group& group) override;
     std::expected<std::vector<domain::Group>, std::string> GetGroups(const std::string_view& tournamentId) override;
     std::expected<domain::Group, std::string> GetGroup(const std::string_view& tournamentId, const std::string_view& groupId) override;
@@ -31,9 +34,12 @@ public:
 
 // --- Implementaciones ---
 
-inline GroupDelegate::GroupDelegate(const std::shared_ptr<TournamentRepository>& tournamentRepository, const std::shared_ptr<GroupRepository>& groupRepository, const std::shared_ptr<TeamRepository>& teamRepository)
-    : tournamentRepository(std::move(tournamentRepository)), groupRepository(std::move(groupRepository)), teamRepository(std::move(teamRepository)){}
-
+inline GroupDelegate::GroupDelegate(
+    const std::shared_ptr<IRepository<domain::Tournament, std::string>>& tournamentRepo,
+    const std::shared_ptr<IRepository<domain::Group, std::string>>& groupRepo,
+    const std::shared_ptr<IRepository<domain::Team, std::string>>& teamRepo)
+    : tournamentRepository(tournamentRepo), groupRepository(groupRepo), teamRepository(teamRepo) {}
+    
 inline std::expected<std::string, std::string> GroupDelegate::CreateGroup(const std::string_view& tournamentId, const domain::Group& group) {
     // **Lógica de negocio: Verificar que el torneo exista**
     auto tournament = tournamentRepository->ReadById(tournamentId.data());
