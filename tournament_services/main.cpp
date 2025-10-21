@@ -5,6 +5,7 @@
 
 int main() {
     const auto container = config::containerSetup();
+    activemq::library::ActiveMQCPP::initializeLibrary();
     crow::SimpleApp app;
 
     // Bind all annotated routes
