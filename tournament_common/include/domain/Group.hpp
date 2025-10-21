@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include "domain/Team.hpp" // Asegúrate de que Team tenga operator== también
+#include "domain/Team.hpp" 
 
 namespace domain {
     class Group {
@@ -38,11 +38,33 @@ namespace domain {
         }
     };
 
-    // --- Funciones de Serialización JSON ---
+     // --- Funciones de Serialización JSON ---
     // (Asegúrate de que estas funciones estén completas y correctas)
-    inline void to_json(nlohmann::json& j, const Group& g) { /* ... */ }
-    inline void from_json(const nlohmann::json& j, Group& g) { /* ... */ }
-    inline void to_json(nlohmann::json& j, const std::shared_ptr<domain::Group>& g) { /* ... */ }
+    inline void to_json(nlohmann::json& j, const Group& g) {
+        j = nlohmann::json{
+            {"id", g.Id()}, 
+            {"name", g.Name()},
+            {"tournamentId", g.TournamentId()},
+            {"teams", g.Teams()}
+        };
+    }
+    
+    inline void from_json(const nlohmann::json& j, Group& g) {
+        g.Id() = j.value("id", "");
+        g.Name() = j.value("name", "");
+        g.TournamentId() = j.value("tournamentId", "");
+        if (j.contains("teams")) {
+            j.at("teams").get_to(g.Teams());
+        }
+    }
+    
+    inline void to_json(nlohmann::json& j, const std::shared_ptr<domain::Group>& g) {
+        if (g) {
+            to_json(j, *g);
+        } else {
+            j = nullptr;
+        }
+    }
 
 }
 #endif //DOMAIN_GROUP_HPP

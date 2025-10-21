@@ -1,9 +1,9 @@
-// ✅ CAMBIO CRÍTICO: Se añade el include que faltaba
 #include "delegate/TournamentDelegate.hpp"
-
 #include <utility> // Para std::move
 
-TournamentDelegate::TournamentDelegate(std::shared_ptr<IRepository<domain::Tournament, std::string>> repository, std::shared_ptr<QueueMessageProducer> producer) 
+TournamentDelegate::TournamentDelegate(
+    std::shared_ptr<IRepository<domain::Tournament, std::string>> repository, 
+    std::shared_ptr<IQueueMessageProducer> producer) 
     : tournamentRepository(std::move(repository)), producer(std::move(producer)) {
 }
 

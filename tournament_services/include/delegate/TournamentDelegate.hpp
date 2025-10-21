@@ -3,7 +3,7 @@
 
 #include "delegate/ITournamentDelegate.hpp"
 #include "persistence/repository/IRepository.hpp"
-#include "cms/QueueMessageProducer.hpp"
+#include "cms/IQueueMessageProducer.hpp" // Usar la interfaz
 #include <memory>
 
 // Forward declaration
@@ -14,11 +14,14 @@ namespace domain {
 class TournamentDelegate : public ITournamentDelegate {
     // Miembros de la clase
     std::shared_ptr<IRepository<domain::Tournament, std::string>> tournamentRepository;
-    std::shared_ptr<QueueMessageProducer> producer;
+    std::shared_ptr<IQueueMessageProducer> producer; // Usar la interfaz
 
 public:
     // Declaración del constructor
-    explicit TournamentDelegate(std::shared_ptr<IRepository<domain::Tournament, std::string>> repository, std::shared_ptr<QueueMessageProducer> producer);
+    explicit TournamentDelegate(
+        std::shared_ptr<IRepository<domain::Tournament, std::string>> repository, 
+        std::shared_ptr<IQueueMessageProducer> producer
+    );
     ~TournamentDelegate() override = default;
 
     // Declaraciones de los métodos del CRUD
