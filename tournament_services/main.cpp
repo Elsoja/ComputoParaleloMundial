@@ -4,7 +4,6 @@
 #include "configuration/RunConfiguration.hpp"  // <-- Ruta corregida
 
 int main() {
-    activemq::library::ActiveMQCPP::initializeLibrary();
     const auto container = config::containerSetup();
     crow::SimpleApp app;
 
