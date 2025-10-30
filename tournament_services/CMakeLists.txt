@@ -32,6 +32,11 @@ target_link_libraries(tournament_logic PUBLIC
 # --- Creación del Ejecutable Principal ---
 add_executable(${PROJECT_NAME} main.cpp)
 
+# Agregar flag /bigobj para MSVC
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /bigobj)
+endif()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     tournament_logic
     Crow::Crow

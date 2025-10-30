@@ -3,7 +3,8 @@ project(Tournaments)
 
 cmake_policy(SET CMP0135 NEW)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 17)
+add_compile_definitions(_HAS_AUTO_PTR_ETC=1)
 
 find_package(Crow CONFIG REQUIRED)
 find_package(libpqxx CONFIG REQUIRED)

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Equipos - Sistema de Torneos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .team-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .team-flag {
+            width: 50px;
+            height: 30px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="index.html">⚽ Sistema de Torneos</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="teams.html">Equipos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="tournaments.html">Torneos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="groups.html">Grupos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="matches.html">Partidos</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Gestión de Equipos</h1>
+            <p class="text-muted">Administra los equipos participantes en los torneos</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#teamModal" onclick="openCreateModal()">
+                ➕ Nuevo Equipo
+            </button>
+        </div>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <input type="text" class="form-control" id="searchInput" placeholder="🔍 Buscar equipos..." onkeyup="filterTeams()">
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="countryFilter" onchange="filterTeams()">
+                <option value="">Todos los países</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+
+    <!-- Lista de Equipos -->
+    <div id="teams-container" class="row"></div>
+
+    <!-- Mensaje si no hay equipos -->
+    <div id="no-teams" class="alert alert-info" style="display: none;">
+        No hay equipos registrados. ¡Crea el primero!
+    </div>
+</div>
+
+<!-- Modal para Crear/Editar Equipo -->
+<div class="modal fade" id="teamModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Nuevo Equipo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="team-form">
+                    <input type="hidden" id="team-id">
+
+                    <div class="mb-3">
+                        <label for="team-name" class="form-label">Nombre del Equipo *</label>
+                        <input type="text" class="form-control" id="team-name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="team-country" class="form-label">País *</label>
+                        <input type="text" class="form-control" id="team-country" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="team-flag" class="form-label">URL de la Bandera</label>
+                        <input type="url" class="form-control" id="team-flag" placeholder="https://...">
+                        <small class="text-muted">Opcional: URL de la imagen de la bandera</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="team-players" class="form-label">Número de Jugadores</label>
+                        <input type="number" class="form-control" id="team-players" min="1" max="50" value="23">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="team-coach" class="form-label">Director Técnico</label>
+                        <input type="text" class="form-control" id="team-coach">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveTeam()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/api.js"></script>
+<script>
+    let teams = [];
+    let editingTeamId = null;
+    const modal = new bootstrap.Modal(document.getElementById('teamModal'));
+
+    // Cargar equipos al iniciar
+    window.onload = loadTeams;
+
+    async function loadTeams() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('teams-container').innerHTML = '';
+
+        try {
+            const response = await fetch('http://localhost:8080/teams');
+            teams = await response.json();
+
+            document.getElementById('loading').style.display = 'none';
+
+            if (teams.length === 0) {
+                document.getElementById('no-teams').style.display = 'block';
+            } else {
+                document.getElementById('no-teams').style.display = 'none';
+                renderTeams(teams);
+                populateCountryFilter();
+            }
+        } catch (error) {
+            document.getElementById('loading').style.display = 'none';
+            alert('Error al cargar equipos: ' + error.message);
+        }
+    }
+
+    function renderTeams(teamsToRender) {
+        const container = document.getElementById('teams-container');
+        container.innerHTML = '';
+
+        teamsToRender.forEach(team => {
+            const doc = team.document || team;
+            const teamCard = `
+                    <div class="col-md-4 team-item" data-country="${doc.country}">
+                        <div class="team-card">
+                            <div class="d-flex align-items-center mb-3">
+                                ${doc.flag ? `<img src="${doc.flag}" class="team-flag me-3" onerror="this.style.display='none'">` : ''}
+                                <div>
+                                    <h5 class="mb-0">${doc.name}</h5>
+                                    <small class="text-muted">${doc.country}</small>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <strong>Jugadores:</strong> ${doc.players || 'N/A'}
+                            </div>
+                            ${doc.coach ? `<div class="mb-2"><strong>DT:</strong> ${doc.coach}</div>` : ''}
+                            <div class="btn-group w-100" role="group">
+                                <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${team.id}')">
+                                    ✏️ Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTeam('${team.id}', '${doc.name}')">
+                                    🗑️ Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            container.innerHTML += teamCard;
+        });
+    }
+
+    function populateCountryFilter() {
+        const countries = [...new Set(teams.map(t => (t.document || t).country))];
+        const select = document.getElementById('countryFilter');
+        select.innerHTML = '<option value="">Todos los países</option>';
+        countries.forEach(country => {
+            select.innerHTML += `<option value="${country}">${country}</option>`;
+        });
+    }
+
+    function filterTeams() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const countryFilter = document.getElementById('countryFilter').value;
+
+        const filtered = teams.filter(team => {
+            const doc = team.document || team;
+            const matchesSearch = doc.name.toLowerCase().includes(searchTerm) ||
+                doc.country.toLowerCase().includes(searchTerm);
+            const matchesCountry = !countryFilter || doc.country === countryFilter;
+            return matchesSearch && matchesCountry;
+        });
+
+        renderTeams(filtered);
+    }
+
+    function openCreateModal() {
+        editingTeamId = null;
+        document.getElementById('modalTitle').textContent = 'Nuevo Equipo';
+        document.getElementById('team-form').reset();
+        document.getElementById('team-id').value = '';
+    }
+
+    function openEditModal(teamId) {
+        const team = teams.find(t => t.id === teamId);
+        if (!team) return;
+
+        const doc = team.document || team;
+        editingTeamId = teamId;
+
+        document.getElementById('modalTitle').textContent = 'Editar Equipo';
+        document.getElementById('team-id').value = teamId;
+        document.getElementById('team-name').value = doc.name;
+        document.getElementById('team-country').value = doc.country;
+        document.getElementById('team-flag').value = doc.flag || '';
+        document.getElementById('team-players').value = doc.players || 23;
+        document.getElementById('team-coach').value = doc.coach || '';
+
+        modal.show();
+    }
+
+    async function saveTeam() {
+        const teamData = {
+            name: document.getElementById('team-name').value,
+            country: document.getElementById('team-country').value,
+            flag: document.getElementById('team-flag').value,
+            players: parseInt(document.getElementById('team-players').value),
+            coach: document.getElementById('team-coach').value
+        };
+
+        try {
+            let response;
+            if (editingTeamId) {
+                // Actualizar
+                response = await fetch(`http://localhost:8080/teams/${editingTeamId}`, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(teamData)
+                });
+            } else {
+                // Crear
+                response = await fetch('http://localhost:8080/teams', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(teamData)
+                });
+            }
+
+            if (response.ok) {
+                modal.hide();
+                loadTeams();
+                alert(editingTeamId ? 'Equipo actualizado exitosamente' : 'Equipo creado exitosamente');
+            } else {
+                alert('Error al guardar el equipo');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    async function deleteTeam(teamId, teamName) {
+        if (!confirm(`¿Estás seguro de eliminar a "${teamName}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/teams/${teamId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                loadTeams();
+                alert('Equipo eliminado exitosamente');
+            } else {
+                alert('Error al eliminar el equipo');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+</script>
+</body>
+</html>
+```
+
+---
+
+**Guarda este archivo como `web/teams.html` y accede a:**
+```
+http://localhost:8081/teams.html
