@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include "domain/Team.hpp" 
+#include "Team.hpp" 
 
 namespace domain {
     class Group {
@@ -19,13 +19,10 @@ namespace domain {
 
         [[nodiscard]] std::string Id() const { return id; }
         std::string& Id() { return id; }
-
         [[nodiscard]] std::string Name() const { return name; }
         std::string& Name() { return name; }
-
         [[nodiscard]] std::string TournamentId() const { return tournamentId; }
         std::string& TournamentId() { return tournamentId; }
-
         [[nodiscard]] const std::vector<Team>& Teams() const { return teams; }
         std::vector<Team>& Teams() { return teams; }
 
@@ -34,7 +31,7 @@ namespace domain {
             return id == other.id &&
                    name == other.name &&
                    tournamentId == other.tournamentId &&
-                   teams == other.teams; // std::vector ya tiene operator== si Team lo tiene
+                   teams == other.teams; // Asume que Team tiene operator==
         }
     };
 

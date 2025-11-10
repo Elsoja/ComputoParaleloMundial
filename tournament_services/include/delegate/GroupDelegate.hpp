@@ -13,6 +13,8 @@
 #include "persistence/repository/GroupRepository.hpp"
 #include "persistence/repository/TeamRepository.hpp"
 #include "domain/Group.hpp"
+#include "domain/Tournament.hpp" 
+#include "domain/Team.hpp"
 
 class GroupDelegate : public IGroupDelegate{
     std::shared_ptr<IRepository<domain::Tournament, std::string>> tournamentRepository;
