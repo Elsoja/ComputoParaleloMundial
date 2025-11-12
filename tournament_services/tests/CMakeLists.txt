@@ -9,6 +9,7 @@ add_executable(
     controller/TeamControllerTest.cpp
     controller/GroupControllerTest.cpp
     delegate/GroupDelegateTest.cpp
+    strategy/IMatchStrategyTest.cpp
 )
 
 set_target_properties(tournament_tests_runner PROPERTIES CXX_STANDARD 23)
