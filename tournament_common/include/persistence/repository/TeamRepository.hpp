@@ -73,9 +73,9 @@ public:
 
         try {
             pqxx::work tx(*(connection->connection));
-            tx.exec_params("UPDATE teams SET document = $1::jsonb WHERE id = $2", teamBody.dump(), entity.Id);
+            tx.exec_params("UPDATE teams SET document = $1::jsonb WHERE id = $2", teamBody.dump(), entity.Id());
             tx.commit();
-            return entity.Id;
+            return entity.Id();
         } catch (const std::exception& e) { return ""; }
     }
 

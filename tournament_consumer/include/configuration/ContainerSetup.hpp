@@ -13,44 +13,102 @@
 
 #include "configuration/DatabaseConfiguration.hpp"
 #include "cms/ConnectionManager.hpp"
+#include "cms/QueueMessageConsumer.hpp"
+#include "persistence/configuration/PostgresConnectionProvider.hpp"
 #include "persistence/repository/IRepository.hpp"
 #include "persistence/repository/TeamRepository.hpp"
-#include "persistence/configuration/PostgresConnectionProvider.hpp"
 #include "persistence/repository/TournamentRepository.hpp"
-#include "cms/QueueMessageConsumer.hpp"
+#include "persistence/repository/GroupRepository.hpp"
+
+// 🆕 INCLUDES DE MATCHES
+#include "persistence/repository/IMatchRepository.hpp"
+#include "persistence/repository/MatchRepository.hpp"
+#include "service/MatchService.hpp"
+#include "handlers/MatchEventHandler.hpp"
+#include "delegate/MatchDelegate.hpp"
 
 namespace config {
     inline std::shared_ptr<Hypodermic::Container> containerSetup() {
         Hypodermic::ContainerBuilder builder;
 
+        // Cargar configuración
         std::ifstream file("configuration.json");
         nlohmann::json configuration;
         file >> configuration;
 
-        std::shared_ptr<PostgresConnectionProvider> postgressConnection = std::make_shared<PostgresConnectionProvider>(configuration["databaseConfig"]["connectionString"].get<std::string>(), configuration["databaseConfig"]["poolSize"].get<size_t>());
+        // ====================================================================
+        // BASE DE DATOS
+        // ====================================================================
+        std::shared_ptr<PostgresConnectionProvider> postgressConnection = 
+            std::make_shared<PostgresConnectionProvider>(
+                configuration["databaseConfig"]["connectionString"].get<std::string>(), 
+                configuration["databaseConfig"]["poolSize"].get<size_t>()
+            );
         builder.registerInstance(postgressConnection).as<IDbConnectionProvider>();
 
+        // Registrar DatabaseConfiguration para MatchRepository
+        auto dbConfig = std::make_shared<configuration::DatabaseConfiguration>(
+            configuration["databaseConfig"]["connectionString"].get<std::string>()
+        );
+        builder.registerInstance(dbConfig);
+
+        // ====================================================================
+        // ACTIVE MQ
+        // ====================================================================
         builder.registerType<ConnectionManager>()
-            .onActivated([configuration](Hypodermic::ComponentContext& context, const std::shared_ptr<ConnectionManager>& instance) {
+            .onActivated([configuration](Hypodermic::ComponentContext& context, 
+                                        const std::shared_ptr<ConnectionManager>& instance) {
                 instance->initialize(configuration["activemq"]["broker-url"].get<std::string>());
             })
             .singleInstance();
 
-        builder.registerType<QueueMessageConsumer>();
-            // .onActivated([](Hypodermic::ComponentContext& , const std::shared_ptr<QueueMessageConsumer>& instance) {
-            //     instance->QueueName() = "tournament.created";
-            //     instance->start();
-            // }).singleInstance();
+        builder.registerType<QueueMessageConsumer>().singleInstance();
 
-        // builder.registerType<QueueMessageProducer>().named("tournamentAddTeamQueue");
-        // builder.registerType<QueueResolver>().as<IResolver<IQueueMessageProducer> >().named("queueResolver").
-        //         singleInstance();
+        // ====================================================================
+        // REPOSITORIOS EXISTENTES
+        // ====================================================================
+        builder.registerType<TeamRepository>()
+            .as<IRepository<domain::Team, std::string>>()
+            .singleInstance();
 
-        builder.registerType<TeamRepository>().as<IRepository<domain::Team, std::string>>().singleInstance();
+        builder.registerType<TournamentRepository>()
+            .as<IRepository<domain::Tournament, std::string>>()
+            .singleInstance();
 
-        builder.registerType<TournamentRepository>().as<IRepository<domain::Tournament, std::string>>().singleInstance();
+        // Asumiendo que tienes GroupRepository
+        builder.registerType<GroupRepository>()
+            .as<IRepository<domain::Group, std::string>>()
+            .singleInstance();
 
+        // ====================================================================
+        // 🆕 REPOSITORIO DE MATCHES
+        // ====================================================================
+        builder.registerType<repository::MatchRepository>()
+            .as<repository::IMatchRepository>()
+            .singleInstance();
+
+        // ====================================================================
+        // 🆕 SERVICIO DE MATCHES
+        // ====================================================================
+        builder.registerType<service::MatchService>()
+            .singleInstance();
+
+        // ====================================================================
+        // 🆕 EVENT HANDLER DE MATCHES
+        // ====================================================================
+        builder.registerType<handlers::MatchEventHandler>()
+            .singleInstance();
+
+        // ====================================================================
+        // 🆕 DELEGATE DE MATCHES
+        // ====================================================================
+        builder.registerType<delegate::MatchDelegate>()
+            .singleInstance();
+
+        std::println("✅ Container configured successfully");
+        
         return builder.build();
     }
 }
+
 #endif //TOURNAMENTS_CONSUMER_CONTAINER_SETUP_HPP

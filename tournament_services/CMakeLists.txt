@@ -15,11 +15,15 @@ find_path(HYPODERMIC_INCLUDE_DIRS "Hypodermic/ActivatedRegistrationInfo.h")
 set(SERVICES_LOGIC_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/delegate/TeamDelegate.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/delegate/TournamentDelegate.cpp
-    # GroupDelegate es header-only, no necesita estar en la lista de .cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/controller/TournamentController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/controller/TeamController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/controller/GroupController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/controller/MatchController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/service/MatchService.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/handlers/MatchEventHandler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/delegate/MatchDelegate.cpp
 )
+
 
 add_library(tournament_logic STATIC ${SERVICES_LOGIC_SOURCES})
 
@@ -42,6 +46,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${HYPODERMIC_INCLUDE_DIRS})
 
+
+# Enlazar con tournament_common y otras dependencias
+target_link_libraries(tournament_services 
+    PRIVATE 
+        tournament_common
+        nlohmann_json::nlohmann_json
+)
 
 # --- Configuración de Pruebas ---
 include(CTest)

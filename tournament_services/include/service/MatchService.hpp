@@ -1,29 +1,27 @@
-#ifndef MATCH_DELEGATE_HPP
-#define MATCH_DELEGATE_HPP
+#ifndef MATCH_SERVICE_HPP
+#define MATCH_SERVICE_HPP
 
-#include "service/MatchService.hpp" // Depende de MatchService
 #include "domain/Match.hpp"
+#include "persistence/repository/IMatchRepository.hpp"
+#include "events/Events.hpp"
 #include <memory>
 #include <vector>
 #include <string>
 
-namespace delegate {
+namespace service {
 
-class MatchDelegate {
+class MatchService {
 private:
-    std::shared_ptr<service::MatchService> matchService;
+    std::shared_ptr<repository::IMatchRepository> matchRepository;
 
 public:
-    explicit MatchDelegate(std::shared_ptr<service::MatchService> service);
-    ~MatchDelegate() = default;
-
-    // ✅ CAMBIO: Firmas actualizadas para usar std::string y std::shared_ptr
+    explicit MatchService(std::shared_ptr<repository::IMatchRepository> matchRepo);
     
-    void RegisterScore(const std::string& matchId, int team1Score, int team2Score);
+    void RegisterMatchResult(const std::string& matchId, int team1Score, int team2Score);
     
     std::vector<std::shared_ptr<domain::Match>> GetMatchesByTournament(const std::string& tournamentId);
     
-    std::vector<std::shared_ptr<domain::Match>> GetMatchesByPhase(const std::string& tournamentId, const std::string& phase);
+    std::vector<std::shared_ptr<domain::Match>> GetMatchesByPhase(const std::string& tournamentId, domain::MatchPhase phase);
     
     std::vector<std::shared_ptr<domain::Match>> GetMatchesByGroup(const std::string& groupId);
     
@@ -36,8 +34,11 @@ public:
     void UpdateMatch(const domain::Match& match);
     
     void DeleteMatch(const std::string& matchId);
+
+private:
+    std::string MatchPhaseToString(domain::MatchPhase phase);
 };
 
-} // namespace delegate
+} // namespace service
 
-#endif // MATCH_DELEGATE_HPP
+#endif // MATCH_SERVICE_HPP

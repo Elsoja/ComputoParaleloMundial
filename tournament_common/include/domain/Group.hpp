@@ -11,9 +11,9 @@ namespace domain {
     class Group {
         std::string id;
         std::string name;
+        int maxTeams = 4;
         std::string tournamentId;
         std::vector<Team> teams;
-
     public:
         explicit Group(const std::string_view & name = "", const std::string_view& id = "") : id(id), name(name) {}
 
@@ -26,6 +26,13 @@ namespace domain {
         [[nodiscard]] const std::vector<Team>& Teams() const { return teams; }
         std::vector<Team>& Teams() { return teams; }
 
+        [[nodiscard]] bool IsFull() const {
+            return teams.size() >= static_cast<size_t>(maxTeams);
+        }
+
+        int MaxTeams() const { return maxTeams; }
+        void SetMaxTeams(int max) { maxTeams = max; }
+            
         // Dos grupos son iguales si su Id, Name, TournamentId y equipos son iguales.
         bool operator==(const Group& other) const {
             return id == other.id &&

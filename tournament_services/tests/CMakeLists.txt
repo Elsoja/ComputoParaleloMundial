@@ -21,8 +21,12 @@ target_link_libraries(
     GTest::gtest
     GTest::gmock
     GTest::gtest_main
+    unofficial::activemq-cpp::activemq-cpp
 )
 
 # Habilita el descubrimiento automático de pruebas
 include(GoogleTest)
-gtest_discover_tests(tournament_tests_runner)
+gtest_discover_tests(
+    tournament_tests_runner
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)

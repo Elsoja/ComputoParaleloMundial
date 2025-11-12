@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CONSUMER_SOURCES
 )
 
+
 find_package(libpqxx CONFIG REQUIRED)
 find_path(HYPODERMIC_INCLUDE_DIRS "Hypodermic/ActivatedRegistrationInfo.h")
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -16,16 +17,17 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        Crow::Crow
-        asio::asio
-        nlohmann_json::nlohmann_json
-        libpqxx::pqxx
-        unofficial::activemq-cpp::activemq-cpp
-        tournament_common
+    tournament_logic # La librería que contiene MatchService
+    tournament_common
+    unofficial::activemq-cpp::activemq-cpp
+    libpqxx::pqxx
+    nlohmann_json::nlohmann_json
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${HYPODERMIC_INCLUDE_DIRS})
-
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tournament_services/include
+    ${HYPODERMIC_INCLUDE_DIRS}
+)
 configure_file(
         ${CMAKE_SOURCE_DIR}/${PROJECT_NAME}/configuration.json   # source file
         ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/configuration.json  # destination

@@ -1,15 +1,23 @@
-#ifndef DATA_BASE_CONFIGURATION_HPP
-#define DATA_BASE_CONFIGURATION_HPP
+#ifndef DATABASE_CONFIGURATION_HPP
+#define DATABASE_CONFIGURATION_HPP
 
 #include <string>
 
-namespace config {
-    struct DatabaseConfiguration{
-        std::string connectionString;
-    };
+namespace configuration {
 
-    inline void from_json(const nlohmann::json& json, DatabaseConfiguration& databaseConfiguration) {
-        json.at("connectionString").get_to(databaseConfiguration.connectionString);
+class DatabaseConfiguration {
+private:
+    std::string connectionString;
+
+public:
+    explicit DatabaseConfiguration(const std::string& connStr)
+        : connectionString(connStr) {}
+
+    std::string GetConnectionString() const {
+        return connectionString;
     }
-}
-#endif
+};
+
+} // namespace configuration
+
+#endif // DATABASE_CONFIGURATION_HPP

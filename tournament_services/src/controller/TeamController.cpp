@@ -29,7 +29,7 @@ crow::response TeamController::UpdateTeam(const crow::request& request, const st
     auto requestBody = nlohmann::json::parse(request.body);
     domain::Team team;
     from_json(requestBody, team);
-    team.Id = id;
+    team.Id() = id;
 
     auto result = teamDelegate->UpdateTeam(id, team);
     
