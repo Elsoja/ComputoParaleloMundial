@@ -62,7 +62,7 @@ namespace config {
             })
             .singleInstance();
 
-        builder.registerType<QueueMessageConsumer>().singleInstance();
+        builder.registerType<cms::QueueMessageConsumer>().singleInstance();
 
         // ====================================================================
         // REPOSITORIOS EXISTENTES

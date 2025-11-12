@@ -26,6 +26,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../tournament_services/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../tournament_common/include
     ${HYPODERMIC_INCLUDE_DIRS}
 )
 configure_file(

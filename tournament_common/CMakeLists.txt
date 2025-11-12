@@ -22,7 +22,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     tournament_logic # La librería que contiene MatchService
-    tournament_common
     unofficial::activemq-cpp::activemq-cpp
     libpqxx::pqxx
     nlohmann_json::nlohmann_json

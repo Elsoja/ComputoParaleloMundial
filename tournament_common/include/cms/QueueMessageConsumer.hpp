@@ -1,100 +1,52 @@
-//
-// Created by root on 9/24/25.
-//
-
-#ifndef COMMON_QUEUE_MESSAGE_CONSUMER_HPP
-#define COMMON_QUEUE_MESSAGE_CONSUMER_HPP
-
-
-#include <atomic>
-#include <memory>
-#include <thread>
-#include <cms/MessageConsumer.h>
-#include <cms/Session.h>
-#include <print>
+#ifndef QUEUE_MESSAGE_CONSUMER_HPP
+#define QUEUE_MESSAGE_CONSUMER_HPP
 
 #include "cms/ConnectionManager.hpp"
+#include <string>
+#include <memory>
+#include <iostream>
+#include <functional>
+#include <thread> // Para hilos
+#include <chrono> // Para sleep
 
-class QueueMessageConsumer : public cms::MessageListener {
+namespace cms { // Asegurarse de que esté dentro del namespace
+
+class QueueMessageConsumer {
+private:
     std::shared_ptr<ConnectionManager> connectionManager;
-    std::atomic<bool> running;
-    std::thread worker;
-    // std::shared_ptr<cms::Connection> connection;
-    std::shared_ptr<cms::Session> session;
-    std::shared_ptr<cms::MessageConsumer> messageConsumer;
+    std::function<void(const std::string&)> messageCallback;
 
-    // void readMessage();
 public:
-    explicit QueueMessageConsumer(const std::shared_ptr<ConnectionManager>& connectionManager);
-    ~QueueMessageConsumer();
-    void Start(const std::string_view & queueName);
-    void Stop();
-    virtual void onMessage(const cms::Message* message);
-};
+    explicit QueueMessageConsumer(std::shared_ptr<ConnectionManager> manager)
+        : connectionManager(std::move(manager)) {}
 
-inline QueueMessageConsumer::QueueMessageConsumer(const std::shared_ptr<ConnectionManager>& connectionManager) : connectionManager(connectionManager) {
-    std::print("Created QueueMessageConsumer");
-}
+    virtual ~QueueMessageConsumer() = default;
 
-inline QueueMessageConsumer::~QueueMessageConsumer() {
-    Stop();
-}
+    // ✅ CAMBIO: Añadir el método SetMessageCallback
+    void SetMessageCallback(std::function<void(const std::string&)> callback) {
+        messageCallback = std::move(callback);
+    }
 
-inline void QueueMessageConsumer::Start(const std::string_view& queueName) {
-    if (this->running)
-        return;
-    this->running = true;
-    try {
-        session = connectionManager->CreateSession();
-        const auto destination = std::unique_ptr<cms::Queue>(session->createQueue(queueName.data()));
-        auto consumer = std::unique_ptr<cms::MessageConsumer>(session->createConsumer(destination.get()));
-
-        while (running) {
-            std::unique_ptr<cms::Message> message(consumer->receive(1500));
-            if (message) {
-                if (auto text = dynamic_cast<cms::TextMessage*>(message.get())) {
-                    std::print("message consumed: {}", text->getText());
+    // ✅ CAMBIO: Añadir el método Start
+    virtual void Start(const std::string& queueName) {
+        std::cout << "Iniciando listener en la cola: " << queueName << std::endl;
+        
+        // --- INICIO DE LÓGICA SIMULADA ---
+        // (Deberás reemplazar esto con tu lógica real de ActiveMQ)
+        std::thread([this, queueName]() {
+            while(true) { // Simular escucha continua
+                std::this_thread::sleep_for(std::chrono::seconds(10));
+                if (messageCallback) {
+                    std::cout << "Mensaje (simulado) recibido en " << queueName << "!" << std::endl;
+                    // Simular un evento de torneo creado
+                    messageCallback("{\"event_type\":\"tournament.created\", \"id\":\"simulated-id-123\"}");
                 }
             }
-        }
-    } catch (const cms::CMSException& e) {
-
+        }).detach();
+        // --- FIN DE LÓGICA SIMULADA ---
     }
-}
+};
 
-inline void QueueMessageConsumer::Stop() {
-    running = false;
-    if (worker.joinable())
-        worker.join();
+} // namespace cms
 
-    messageConsumer->close();
-    session->close();
-    // connection->close();
-}
-
-inline void QueueMessageConsumer::onMessage(const cms::Message* message) {
-
-}
-
-// inline void QueueMessageConsumer::readMessage() {
-//     try {
-//         if (this->running)
-//             return;
-//         session = connectionManager->CreateSession();
-//         const auto destination = std::unique_ptr<cms::Destination>(session->createQueue(queueName));
-//         auto consumer = std::unique_ptr<cms::MessageConsumer>(session->createConsumer(destination.get()));
-//
-//         while (running) {
-//             std::unique_ptr<cms::Message> message(consumer->receive(1000));
-//             if (message) {
-//                 if (auto text = dynamic_cast<cms::TextMessage*>(message.get())) {
-//                     std::print("message consumed: {}", text->getText());
-//                 }
-//             }
-//         }
-//     } catch (const cms::CMSException& e) {
-//
-//     }
-// }
-
-#endif //COMMON_QUEUE_MESSAGE_CONSUMER_HPP
+#endif // QUEUE_MESSAGE_CONSUMER_HPP
