@@ -117,7 +117,7 @@ namespace domain {
         m.Phase() = j.value("phase", MatchPhase::GROUP_STAGE);
         m.MatchNumber() = j.value("matchNumber", 0);
         
-        // ✅ CAMBIO: Manejo correcto de nullopt para tipos opcionales
+
         m.Team1Id() = j.value("team1Id", std::optional<std::string>{});
         m.Team2Id() = j.value("team2Id", std::optional<std::string>{});
         m.Team1Score() = j.value("team1Score", std::optional<int>{});
