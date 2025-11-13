@@ -22,12 +22,12 @@ public:
 
     virtual ~QueueMessageConsumer() = default;
 
-    // ✅ CAMBIO: Añadir el método SetMessageCallback
+
     void SetMessageCallback(std::function<void(const std::string&)> callback) {
         messageCallback = std::move(callback);
     }
 
-    // ✅ CAMBIO: Añadir el método Start
+
     virtual void Start(const std::string& queueName) {
         std::cout << "Iniciando listener en la cola: " << queueName << std::endl;
         

@@ -7,7 +7,7 @@
 #include <string>
 #include <memory>
 
-// ✅ CAMBIO: El namespace es 'repository'
+
 namespace repository { 
 
 // Usar 'domain::Match' directamente

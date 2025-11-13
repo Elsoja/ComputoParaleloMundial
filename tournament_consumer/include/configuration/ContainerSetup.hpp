@@ -81,26 +81,26 @@ namespace config {
             .singleInstance();
 
         // ====================================================================
-        // 🆕 REPOSITORIO DE MATCHES
+        //
         // ====================================================================
         builder.registerType<repository::MatchRepository>()
             .as<repository::IMatchRepository>()
             .singleInstance();
 
         // ====================================================================
-        // 🆕 SERVICIO DE MATCHES
+        //
         // ====================================================================
         builder.registerType<service::MatchService>()
             .singleInstance();
 
         // ====================================================================
-        // 🆕 EVENT HANDLER DE MATCHES
+        //
         // ====================================================================
         builder.registerType<handlers::MatchEventHandler>()
             .singleInstance();
 
         // ====================================================================
-        // 🆕 DELEGATE DE MATCHES
+        //
         // ====================================================================
         builder.registerType<delegate::MatchDelegate>()
             .singleInstance();

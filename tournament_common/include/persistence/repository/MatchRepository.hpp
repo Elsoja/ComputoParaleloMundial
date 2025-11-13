@@ -4,14 +4,14 @@
 #include "persistence/repository/IMatchRepository.hpp"
 #include "persistence/configuration/IDbConnectionProvider.hpp"
 
-// ✅ CAMBIO: Mover el namespace alhpp
+
 namespace repository {
     class MatchRepository : public IMatchRepository {
         std::shared_ptr<IDbConnectionProvider> connectionProvider;
     public:
         explicit MatchRepository(std::shared_ptr<IDbConnectionProvider> provider);
 
-        // ✅ CAMBIO: Métodos de IRepository (con tipos corregidos)
+
         std::optional<std::string> Create(const domain::Match& entity) override;
         std::shared_ptr<domain::Match> ReadById(std::string id) override;
         std::string Update(const domain::Match& entity) override;
