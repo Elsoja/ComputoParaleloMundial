@@ -23,7 +23,6 @@ crow::response GroupController::CreateGroup(const crow::request& request, const 
             if (result.error() == "Tournament not found") {
                 return crow::response(crow::NOT_FOUND, "{\"error\":\"" + result.error() + "\"}");
             }
-            // ✅ CAMBIO: Se usa el número 422 en lugar de la constante inexistente.
             return crow::response(422, "{\"error\":\"" + result.error() + "\"}");
         }
     } catch (const nlohmann::json::exception& e) {
@@ -70,7 +69,6 @@ crow::response GroupController::DeleteGroup(const std::string& tournamentId, con
     return crow::response(crow::NOT_FOUND);
 }
 
-// CAMBIO: El registro de rutas ahora vive únicamente en este archivo .cpp
 REGISTER_ROUTE(GroupController, CreateGroup, "/tournaments/<string>/groups", "POST"_method)
 REGISTER_ROUTE(GroupController, GetGroups, "/tournaments/<string>/groups", "GET"_method)
 REGISTER_ROUTE(GroupController, GetGroup, "/tournaments/<string>/groups/<string>", "GET"_method)

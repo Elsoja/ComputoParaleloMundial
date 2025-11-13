@@ -1,7 +1,6 @@
 #ifndef RESTAPI_TEAMDELEGATE_HPP
 #define RESTAPI_TEAMDELEGATE_HPP
 
-// Estos son los includes correctos que necesita el archivo
 #include "delegate/ITeamDelegate.hpp"
 #include "persistence/repository/IRepository.hpp"
 #include "domain/Team.hpp"

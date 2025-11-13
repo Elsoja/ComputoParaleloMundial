@@ -36,29 +36,23 @@ void MatchService::RegisterMatchResult(const std::string& matchId, int team1Scor
     events::EventBus::Instance()->Publish(event);
 }
 
-// ✅ CAMBIO: Firma y tipo de retorno coinciden con el .hpp
 std::vector<std::shared_ptr<domain::Match>> MatchService::GetMatchesByTournament(const std::string& tournamentId) {
     return matchRepository->FindByTournamentId(tournamentId);
 }
 
-// ✅ CAMBIO: Firma y tipo de retorno coinciden con el .hpp
 std::vector<std::shared_ptr<domain::Match>> MatchService::GetMatchesByPhase(const std::string& tournamentId, domain::MatchPhase phase) {
     return matchRepository->FindByTournamentIdAndPhase(tournamentId, phase);
 }
 
-// ✅ CAMBIO: Firma y tipo de retorno coinciden con el .hpp
 std::vector<std::shared_ptr<domain::Match>> MatchService::GetMatchesByGroup(const std::string& groupId) {
     return matchRepository->FindByGroupId(groupId);
 }
 
-// ✅ CAMBIO: Firma y tipo de retorno coinciden con el .hpp
 std::vector<std::shared_ptr<domain::Match>> MatchService::GetMatchesByTeam(const std::string& teamId) {
     return matchRepository->FindByTeamId(teamId);
 }
 
-// ✅ CAMBIO: Firma y tipo de retorno coinciden con el .hpp
 std::shared_ptr<domain::Match> MatchService::GetMatchById(const std::string& matchId) {
-    // ✅ CAMBIO: FindById -> ReadById
     return matchRepository->ReadById(matchId);
 }
 
@@ -70,7 +64,6 @@ void MatchService::UpdateMatch(const domain::Match& match) {
     matchRepository->Update(match);
 }
 
-// ✅ CAMBIO: Firma coincide con el .hpp
 void MatchService::DeleteMatch(const std::string& matchId) {
     matchRepository->Delete(matchId);
 }

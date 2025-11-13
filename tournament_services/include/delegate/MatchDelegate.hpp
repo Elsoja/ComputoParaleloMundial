@@ -17,7 +17,6 @@ public:
     explicit MatchDelegate(std::shared_ptr<service::MatchService> service);
     ~MatchDelegate() = default;
 
-    // ✅ CAMBIO: Firmas actualizadas para usar std::string y std::shared_ptr
     
     void RegisterScore(const std::string& matchId, int team1Score, int team2Score);
     

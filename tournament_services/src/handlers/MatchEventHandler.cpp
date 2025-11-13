@@ -1,9 +1,9 @@
 #include "handlers/MatchEventHandler.hpp"
 #include <iostream>
-#include <string> // Asegurarse de incluir string
-#include <map>    // Asegurarse de incluir map
-#include <vector> // Asegurarse de incluir vector
-#include <memory> // Para std::shared_ptr
+#include <string> 
+#include <map>   
+#include <vector> 
+#include <memory> 
 
 namespace handlers {
 
@@ -34,7 +34,6 @@ void MatchEventHandler::OnScoreRegistered(const events::ScoreRegisteredEvent& ev
 }
 
 void MatchEventHandler::HandleGroupStageScoreRegistered(const events::ScoreRegisteredEvent& event) {
-    // ✅ CAMBIO: ID es std::string
     std::string tournamentId = event.TournamentId();
     std::cout << "[MatchEventHandler] Checking if group stage is complete for tournament " 
               << tournamentId << std::endl;
@@ -46,7 +45,6 @@ void MatchEventHandler::HandleGroupStageScoreRegistered(const events::ScoreRegis
 }
 
 void MatchEventHandler::HandlePlayoffScoreRegistered(const events::ScoreRegisteredEvent& event) {
-    // ✅ CAMBIO: IDs son std::string
     std::string matchId = event.MatchId();
     std::string winnerId = event.WinnerId();
     
@@ -55,7 +53,6 @@ void MatchEventHandler::HandlePlayoffScoreRegistered(const events::ScoreRegister
         return;
     }
 
-    // ✅ CAMBIO: Usar ReadById (como en el resto de la app)
     auto completedMatch = matchRepository->ReadById(matchId);
     if (!completedMatch) {
         std::cout << "[MatchEventHandler] Match " << matchId << " not found" << std::endl;
@@ -78,12 +75,10 @@ void MatchEventHandler::HandlePlayoffScoreRegistered(const events::ScoreRegister
     }
 }
 
-// ✅ CAMBIO: Firma coincide con .hpp (const std::string&)
 bool MatchEventHandler::IsGroupStageComplete(const std::string& tournamentId) {
     return matchRepository->IsGroupStageComplete(tournamentId);
 }
 
-// ✅ CAMBIO: Firma coincide con .hpp (const std::string&)
 void MatchEventHandler::GeneratePlayoffsFromGroupStage(const std::string& tournamentId) {
     try {
         auto groupIds = GetGroupIdsForTournament(tournamentId);
@@ -116,14 +111,12 @@ void MatchEventHandler::GeneratePlayoffsFromGroupStage(const std::string& tourna
     }
 }
 
-// ✅ CAMBIO: Firma coincide con .hpp (vector<string>)
 std::vector<std::string> MatchEventHandler::ApplyStandingsRules(
     const std::string& tournamentId, 
     const std::vector<std::string>& groupIds
 ) {
     std::vector<std::string> qualifiedTeams;
     
-    // ✅ CAMBIO: Iterar sobre std::string
     for (const std::string& groupId : groupIds) {
         auto standings = CalculateGroupStandings(groupId);
         
@@ -144,19 +137,15 @@ std::vector<std::string> MatchEventHandler::ApplyStandingsRules(
     return qualifiedTeams;
 }
 
-// ✅ CAMBIO: Firma coincide con .hpp (const std::string&)
 std::vector<MatchEventHandler::TeamStanding> MatchEventHandler::CalculateGroupStandings(const std::string& groupId) {
     auto matches = matchRepository->FindByGroupId(groupId);
-    // ✅ CAMBIO: El mapa usa std::string como clave
     std::map<std::string, TeamStanding> standings;
 
-    for (const auto& matchPtr : matches) { // matchPtr es shared_ptr
-        // ✅ CAMBIO: Usar -> en lugar de . para acceder a miembros de shared_ptr
+    for (const auto& matchPtr : matches) {
         if (!matchPtr->IsComplete() || !matchPtr->Team1Id().has_value() || !matchPtr->Team2Id().has_value()) {
             continue;
         }
 
-        // ✅ CAMBIO: IDs son std::string
         std::string team1Id = matchPtr->Team1Id().value();
         std::string team2Id = matchPtr->Team2Id().value();
         int score1 = matchPtr->Team1Score().value_or(0);
@@ -197,7 +186,6 @@ std::vector<MatchEventHandler::TeamStanding> MatchEventHandler::CalculateGroupSt
 }
 
 
-// ✅ CAMBIO: Firma coincide con .hpp (vector<string>)
 std::vector<domain::Match> MatchEventHandler::GeneratePlayoffMatchesFromQualified(
     const std::vector<std::string>& qualifiedTeams,
     const std::string& tournamentId,
@@ -208,7 +196,6 @@ std::vector<domain::Match> MatchEventHandler::GeneratePlayoffMatchesFromQualifie
         throw std::runtime_error("Expected 16 qualified teams for round of 16");
     }
 
-    // ✅ CAMBIO: Los vectores de IDs son std::string
     std::vector<std::string> firstPlaces;
     std::vector<std::string> secondPlaces;
     
@@ -220,7 +207,6 @@ std::vector<domain::Match> MatchEventHandler::GeneratePlayoffMatchesFromQualifie
     }
 
     int matchNumber = 1;
-    // ✅ CAMBIO: Todos los IDs pasados a CreateMatchWithTeams son std::string
     matches.push_back(CreateMatchWithTeams(tournamentId, domain::MatchPhase::ROUND_OF_16, 
                                            matchNumber++, firstPlaces[0], secondPlaces[7])); // A1 vs H2
     matches.push_back(CreateMatchWithTeams(tournamentId, domain::MatchPhase::ROUND_OF_16, 
@@ -242,7 +228,6 @@ std::vector<domain::Match> MatchEventHandler::GeneratePlayoffMatchesFromQualifie
     return matches;
 }
 
-// ✅ CAMBIO: IDs son std::string
 domain::Match MatchEventHandler::CreateMatchWithTeams(
     const std::string& tournamentId, 
     domain::MatchPhase phase, 
@@ -258,10 +243,9 @@ domain::Match MatchEventHandler::CreateMatchWithTeams(
 
 void MatchEventHandler::UpdateNextMatchWithWinner(
     const domain::Match& completedMatch,
-    const std::string& winnerId, // ✅ CAMBIO: ID es std::string
+    const std::string& winnerId, 
     domain::IMatchStrategy* strategy
 ) {
-    // ✅ CAMBIO: Usar ReadById
     auto nextMatch = matchRepository->ReadById(completedMatch.NextMatchId().value());
     if (!nextMatch) {
         std::cout << "[MatchEventHandler] Next match not found" << std::endl;
@@ -276,7 +260,7 @@ void MatchEventHandler::UpdateNextMatchWithWinner(
 
 void MatchEventHandler::CreateAndAssignNextMatch(
     const domain::Match& completedMatch,
-    const std::string& winnerId, // ✅ CAMBIO: ID es std::string
+    const std::string& winnerId, 
     domain::IMatchStrategy* strategy
 ) {
     auto existingMatches = matchRepository->FindByTournamentId(completedMatch.TournamentId());
@@ -294,7 +278,6 @@ void MatchEventHandler::CreateAndAssignNextMatch(
     }
 }
 
-// ✅ CAMBIO: ID es std::string
 void MatchEventHandler::GenerateEmptyPlayoffStructure(
     std::vector<domain::Match>& matches,
     const std::string& tournamentId,
@@ -356,7 +339,6 @@ domain::MatchPhase MatchEventHandler::GetNextPhase(domain::MatchPhase currentPha
     }
 }
 
-// ✅ CAMBIO: IDs son std::string
 std::vector<std::string> MatchEventHandler::GetGroupIdsForTournament(const std::string& tournamentId) {
     auto matches = matchRepository->FindByTournamentIdAndPhase(
         tournamentId, 
@@ -365,7 +347,6 @@ std::vector<std::string> MatchEventHandler::GetGroupIdsForTournament(const std::
 
     std::vector<std::string> groupIds;
     for (const auto& matchPtr : matches) {
-        // ✅ CAMBIO: Usar -> en lugar de .
         if (!matchPtr->GroupId().empty()) { 
             const std::string& groupId = matchPtr->GroupId();
             if (std::find(groupIds.begin(), groupIds.end(), groupId) == groupIds.end()) {
