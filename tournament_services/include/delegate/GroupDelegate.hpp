@@ -55,9 +55,7 @@ inline std::expected<std::string, std::string> GroupDelegate::CreateGroup(const 
     // Lógica opcional: validar que los equipos existan si se proporcionan
     if (!g.Teams().empty()) {
         for (auto& t : g.Teams()) {
-            // ✅ CAMBIO: Usar t.Id() con paréntesis
             if (teamRepository->ReadById(t.Id()) == nullptr) {
-                // ✅ CAMBIO: Usar t.Id() con paréntesis
                 return std::unexpected("Team with id " + t.Id() + " not found");
             }
         }

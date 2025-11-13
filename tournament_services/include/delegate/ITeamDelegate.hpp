@@ -19,8 +19,6 @@ public:
     virtual std::expected<std::string, SaveError> SaveTeam(const domain::Team& team) = 0;
     virtual std::shared_ptr<domain::Team> GetTeam(std::string_view id) = 0;
     virtual std::vector<std::shared_ptr<domain::Team>> GetAllTeams() = 0;
-    
-    // **CAMBIO: Se añaden los nuevos métodos que faltaban**
     virtual std::expected<void, SaveError> UpdateTeam(std::string_view id, const domain::Team& team) = 0;
     virtual std::expected<void, SaveError> DeleteTeam(std::string_view id) = 0;
 };

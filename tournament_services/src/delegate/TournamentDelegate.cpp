@@ -1,5 +1,5 @@
 #include "delegate/TournamentDelegate.hpp"
-#include <utility> // Para std::move
+#include <utility>
 
 TournamentDelegate::TournamentDelegate(
     std::shared_ptr<IRepository<domain::Tournament, std::string>> repository, 

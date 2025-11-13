@@ -1,8 +1,8 @@
 VAMOS  PROBANDO
 DB script
 ````
--- podman run -d --replace --name=tournament_db --network development -e POSTGRES_PASSWORD=password -p 5432:5432 postgres:17.6-alpine3.22
--- podman exec -i tournament_db psql -U postgres -d postgres <database/db_script.sql
+sudo podman run -d --replace --name=tournament_db --network development -e POSTGRES_PASSWORD=password -p 5432:5432 postgres:17.6-alpine3.22
+sudo podman exec -i tournament_db psql -U postgres -d postgres < database/db_script.sql
 ````
 
 activemq
