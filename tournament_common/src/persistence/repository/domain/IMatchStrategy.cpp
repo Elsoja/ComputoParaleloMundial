@@ -35,7 +35,6 @@ std::vector<Match> SingleEliminationStrategy::GenerateGroupStageMatches(
         for (size_t i = 0; i < teams.size(); i++) {
             for (size_t j = i + 1; j < teams.size(); j++) {
                 Match match(tournamentId, MatchPhase::GROUP_STAGE, matchNumber++);
-                // ✅ CAMBIO: Usar Id() y GroupId() como métodos (con paréntesis)
                 match.SetTeam1(teams[i].Id()); 
                 match.SetTeam2(teams[j].Id());
                 match.SetGroupId(group.Id());
@@ -53,17 +52,76 @@ std::vector<Match> SingleEliminationStrategy::GeneratePlayoffMatches(
     auto qualifiedTeams = GetQualifiedTeams(groups);
     if (qualifiedTeams.empty()) return matches;
 
-    MatchPhase initialPhase = DetermineInitialPhase(qualifiedTeams.size());
+    //  SEPARAR PRIMEROS Y SEGUNDOS LUGARES
+    std::vector<std::string> firstPlaces;   // A1, B1, C1, D1, E1, F1, G1, H1
+    std::vector<std::string> secondPlaces;  // A2, B2, C2, D2, E2, F2, G2, H2
     
-    int matchNumber = 1;
     for (size_t i = 0; i < qualifiedTeams.size(); i += 2) {
+        firstPlaces.push_back(qualifiedTeams[i]);
         if (i + 1 < qualifiedTeams.size()) {
-            Match match(tournamentId, initialPhase, matchNumber++);
-            match.SetTeam1(qualifiedTeams[i]);
-            match.SetTeam2(qualifiedTeams[i + 1]);
-            matches.push_back(match);
+            secondPlaces.push_back(qualifiedTeams[i + 1]);
         }
     }
+
+    // EMPAREJAMIENTOS ESPECÍFICOS ESTILO MUNDIAL
+    // Solo aplicar si tenemos exactamente 8 grupos (16 equipos)
+    MatchPhase initialPhase = DetermineInitialPhase(qualifiedTeams.size());
+    int matchNumber = 1;
+    
+    if (firstPlaces.size() == 8 && secondPlaces.size() == 8) {
+        // Lado superior del bracket
+        Match match1(tournamentId, initialPhase, matchNumber++);
+        match1.SetTeam1(firstPlaces[0]);  // A1
+        match1.SetTeam2(secondPlaces[7]); // H2
+        matches.push_back(match1);
+        
+        Match match2(tournamentId, initialPhase, matchNumber++);
+        match2.SetTeam1(firstPlaces[1]);  // B1
+        match2.SetTeam2(secondPlaces[6]); // G2
+        matches.push_back(match2);
+        
+        Match match3(tournamentId, initialPhase, matchNumber++);
+        match3.SetTeam1(firstPlaces[2]);  // C1
+        match3.SetTeam2(secondPlaces[5]); // F2
+        matches.push_back(match3);
+        
+        Match match4(tournamentId, initialPhase, matchNumber++);
+        match4.SetTeam1(firstPlaces[3]);  // D1
+        match4.SetTeam2(secondPlaces[4]); // E2
+        matches.push_back(match4);
+        
+        // Lado inferior del bracket
+        Match match5(tournamentId, initialPhase, matchNumber++);
+        match5.SetTeam1(firstPlaces[4]);  // E1
+        match5.SetTeam2(secondPlaces[3]); // D2
+        matches.push_back(match5);
+        
+        Match match6(tournamentId, initialPhase, matchNumber++);
+        match6.SetTeam1(firstPlaces[5]);  // F1
+        match6.SetTeam2(secondPlaces[2]); // C2
+        matches.push_back(match6);
+        
+        Match match7(tournamentId, initialPhase, matchNumber++);
+        match7.SetTeam1(firstPlaces[6]);  // G1
+        match7.SetTeam2(secondPlaces[1]); // B2
+        matches.push_back(match7);
+        
+        Match match8(tournamentId, initialPhase, matchNumber++);
+        match8.SetTeam1(firstPlaces[7]);  // H1
+        match8.SetTeam2(secondPlaces[0]); // A2
+        matches.push_back(match8);
+    } else {
+        // Fallback: emparejamiento secuencial para otros formatos
+        for (size_t i = 0; i < qualifiedTeams.size(); i += 2) {
+            if (i + 1 < qualifiedTeams.size()) {
+                Match match(tournamentId, initialPhase, matchNumber++);
+                match.SetTeam1(qualifiedTeams[i]);
+                match.SetTeam2(qualifiedTeams[i + 1]);
+                matches.push_back(match);
+            }
+        }
+    }
+    
     GenerateEmptyPlayoffStructure(matches, tournamentId, initialPhase, qualifiedTeams.size());
     return matches;
 }
@@ -118,14 +176,12 @@ bool SingleEliminationStrategy::AreGroupsFull(const std::vector<Group>& groups) 
 std::vector<std::string> SingleEliminationStrategy::GetQualifiedTeams(const std::vector<Group>& groups) const {
     std::vector<std::string> qualifiedTeams;
     
-    // ✅ CAMBIO: Eliminado el comentario 
     
     // --- Lógica de ejemplo (la que tenías): ---
     // TODO: Esta lógica necesita ser reemplazada por el cálculo real de la tabla de posiciones.
     for (const auto& group : groups) {
         const auto& teams = group.Teams();
         for (size_t i = 0; i < std::min(size_t(2), teams.size()); i++) {
-            // ✅ CAMBIO: Usar Id() como método
             qualifiedTeams.push_back(teams[i].Id());
         }
     }

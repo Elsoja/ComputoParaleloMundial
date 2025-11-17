@@ -17,7 +17,7 @@ public:
     explicit MatchDelegate(std::shared_ptr<service::MatchService> service);
     ~MatchDelegate() = default;
 
-    
+                                                                                                                                                                                                                                                                                                                                                                
     void RegisterScore(const std::string& matchId, int team1Score, int team2Score);
     
     std::vector<std::shared_ptr<domain::Match>> GetMatchesByTournament(const std::string& tournamentId);
