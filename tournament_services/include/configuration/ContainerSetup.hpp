@@ -49,6 +49,9 @@ namespace config {
             })
             .singleInstance();
 
+        builder.registerType<QueueMessageProducer>()
+            .as<IQueueMessageProducer>()
+            .singleInstance();
         builder.registerType<QueueMessageProducer>().named("tournamentAddTeamQueue");
         builder.registerType<QueueResolver>().as<IResolver<IQueueMessageProducer> >().named("queueResolver").
                 singleInstance();

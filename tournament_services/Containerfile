@@ -11,13 +11,12 @@ RUN chmod 777 -R /opt/vcpkg
 RUN /opt/vcpkg/bootstrap-vcpkg.sh
 RUN export VCPKG_BINARY_SOURCES="clear;files,/opt/vcpkg/binary-cache,readwrite"
 
-RUN git clone --depth 1 https://github.com/Elsoja/ComputoParaleloMundial.git /root/tournaments
-
-# Set working directory for build
+# RUN git clone --depth 1 https://github.com/Elsoja/ComputoParaleloMundial.git /root/tournaments
 WORKDIR /root/tournaments
+COPY . .
 
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake -G Ninja -S /root/tournaments -B /root/tournaments/cmake-build-release
-RUN cmake --build /root/tournaments/cmake-build-release --target tournament_services
+RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake -G Ninja -S . -B cmake-build-release
+RUN cmake --build cmake-build-release --target tournament_services
 
 
 # Stage 2: Runtime stage
@@ -40,7 +39,7 @@ WORKDIR /app
 # Copy the built binary from builder stage
 # Adjust the path to match your CMake output
 COPY --from=builder /root/tournaments/cmake-build-release/tournament_services/tournament_services /app/
-COPY --from=builder /root/tournaments/cmake-build-release/tournament_services/configuration.json /app/
+COPY --from=builder /root/tournaments/tournament_services/configuration.json /app/
 
 # Copy any required runtime files (config files, assets, etc.)
 # COPY --from=builder /build/config /app/config/

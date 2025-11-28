@@ -5,6 +5,7 @@ import json
 import uuid
 
 class TournamentUser(HttpUser):
+    host = "http://localhost:8080"
 
     def create_teams(self):
         team_ids = list()

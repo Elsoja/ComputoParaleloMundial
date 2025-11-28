@@ -1,7 +1,7 @@
 #include <activemq/library/ActiveMQCPP.h>
 #include <thread>
 #include <iostream>
-#include <print> 
+#include <format> 
 #include <memory>
 #include <chrono> 
 
@@ -14,52 +14,48 @@
 int main() {
     activemq::library::ActiveMQCPP::initializeLibrary();
     {
-        std::println("🚀 Starting Tournament Consumer");
-        std::println("📦 Initializing container...");
+        std::cout << " Starting Tournament Consumer" << std::endl;
+        std::cout << " Initializing container..." << std::endl;
         
         const auto container = config::containerSetup();
         
-        std::println("✅ Container initialized");
+        std::cout << " Container initialized" << std::endl;
 
         try {
             auto matchRepo = container->resolve<repository::IMatchRepository>();
             auto eventHandler = std::make_shared<handlers::MatchEventHandler>(matchRepo);
             eventHandler->Subscribe();
-            std::println("✅ MatchEventHandler subscribed to internal EventBus");
+            std::cout << " MatchEventHandler subscribed to internal EventBus" << std::endl;
         } catch (const std::exception& e) {
-            std::println(stderr, "❌ Error subscribing MatchEventHandler: {}", e.what());
+            std::cerr << std::format(" Error subscribing MatchEventHandler: {}", e.what()) << std::endl;
         }
 
         std::thread tournamentCreatedThread([&] {
             try {
-                std::println("🎯 Starting 'tournament.created' listener...");
+                std::cout << " Starting 'tournament.created' listener..." << std::endl;
                 
-                // ✅ SOLUCIÓN 1: Resolver sin std::shared_ptr wrapper
                 auto listener = container->resolve<cms::QueueMessageConsumer>();
                 
-                // ✅ SOLUCIÓN 2: O crear directamente si tienes ConnectionManager
-                // auto connManager = container->resolve<cms::ConnectionManager>();
-                // auto listener = std::make_shared<cms::QueueMessageConsumer>(connManager);
-                
+               
                 listener->Start("tournament.created");
             } catch (const std::exception& e) {
-                std::println(stderr, "❌ Error in 'tournament.created' thread: {}", e.what());
+                std::cerr << std::format(" Error in 'tournament.created' thread: {}", e.what()) << std::endl;
             }
         });
 
-        std::println("✅ All listeners started");
-        std::println("📡 Listening to:");
-        std::println("   - 'tournament.created' (External via ActiveMQ)");
-        std::println("   - 'ScoreRegistered' (Internal via EventBus)");
-        std::println("\n⏸️  Press ENTER to stop...\n");
+        std::cout << " All listeners started" << std::endl;
+        std::cout << " Listening to:" << std::endl;
+        std::cout << "   - 'tournament.created' (External via ActiveMQ)" << std::endl;
+        std::cout << "   - 'ScoreRegistered' (Internal via EventBus)" << std::endl;
+        std::cout << "\n  Press ENTER to stop...\n" << std::endl;
 
         std::cin.get();
 
-        std::println("\n🛑 Stopping consumers...");
+        std::cout << "\n Stopping consumers..." << std::endl;
         tournamentCreatedThread.join();
-        std::println("✅ Consumers stopped gracefully");
+        std::cout << " Consumers stopped gracefully" << std::endl;
     }
     activemq::library::ActiveMQCPP::shutdownLibrary();
-    std::println("👋 Bye!");
+    std::cout << " Bye!" << std::endl;
     return 0;
 }

@@ -1,0 +1,72 @@
+services:
+  tournament_db:
+    image: docker.io/library/postgres:17.6-alpine3.22
+    container_name: tournament_db
+    environment:
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    networks:
+      - development
+
+  activemq:
+    image: docker.io/apache/activemq-classic:6.1.7
+    container_name: artemis
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+      - "5672:5672"
+    networks:
+      - development
+
+  haproxy:
+    image: haproxy:latest
+    container_name: haproxy
+    volumes:
+      - ./tournament_services/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "8080:8080"
+      - "8404:8404"
+    depends_on:
+      - tournament_services_1
+      - tournament_services_2
+      - tournament_services_3
+    networks:
+      - development
+
+  tournament_services_1:
+    build:
+      context: .
+      dockerfile: tournament_services/Containerfile
+    container_name: tournament_services_1
+    depends_on:
+      - tournament_db
+      - activemq
+    networks:
+      - development
+
+  tournament_services_2:
+    build:
+      context: .
+      dockerfile: tournament_services/Containerfile
+    container_name: tournament_services_2
+    depends_on:
+      - tournament_db
+      - activemq
+    networks:
+      - development
+
+  tournament_services_3:
+    build:
+      context: .
+      dockerfile: tournament_services/Containerfile
+    container_name: tournament_services_3
+    depends_on:
+      - tournament_db
+      - activemq
+    networks:
+      - development
+
+networks:
+  development:
+    external: true

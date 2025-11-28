@@ -1,5 +1,5 @@
 #include <iostream>
-#include <print>
+#include <format>
 
 namespace consumer {
 
@@ -11,13 +11,13 @@ void MatchMessageHandler::ProcessMessage(const std::string& messageText) {
         auto json = nlohmann::json::parse(messageText);
         
         if (!json.contains("message_type")) {
-            std::println(stderr, "[MatchMessageHandler] Missing message_type field");
+            std::cerr << "[MatchMessageHandler] Missing message_type field" << std::endl;
             return;
         }
 
         std::string messageType = json["message_type"];
         
-        std::println("[MatchMessageHandler] Processing: {}", messageType);
+        std::cout << std::format("[MatchMessageHandler] Processing: {}", messageType) << std::endl;
 
         if (messageType == "RegisterScore") {
             HandleRegisterScore(json);
@@ -28,13 +28,13 @@ void MatchMessageHandler::ProcessMessage(const std::string& messageText) {
         } else if (messageType == "GetMatchesByGroup") {
             HandleGetMatchesByGroup(json);
         } else {
-            std::println(stderr, "[MatchMessageHandler] Unknown message type: {}", messageType);
+            std::cerr << std::format("[MatchMessageHandler] Unknown message type: {}", messageType) << std::endl;
         }
 
     } catch (const nlohmann::json::parse_error& e) {
-        std::println(stderr, "[MatchMessageHandler] JSON parse error: {}", e.what());
+        std::cerr << std::format("[MatchMessageHandler] JSON parse error: {}", e.what()) << std::endl;
     } catch (const std::exception& e) {
-        std::println(stderr, "[MatchMessageHandler] Error processing message: {}", e.what());
+        std::cerr << std::format("[MatchMessageHandler] Error processing message: {}", e.what()) << std::endl;
     }
 }
 
@@ -49,22 +49,22 @@ void MatchMessageHandler::HandleRegisterScore(const nlohmann::json& message) {
         int team1Score = message["team1_score"];
         int team2Score = message["team2_score"];
 
-        std::println("[MatchMessageHandler] Registering score for match {}: {}-{}", 
-                    matchId, team1Score, team2Score);
+        std::cout << std::format("[MatchMessageHandler] Registering score for match {}: {}-{}", 
+                    matchId, team1Score, team2Score) << std::endl;
 
         // 🔥 LLAMAR AL DELEGATE
         matchDelegate->RegisterScore(matchId, team1Score, team2Score);
 
-        std::println("[MatchMessageHandler] ✅ Score registered successfully for match {}", matchId);
+        std::cout << std::format("[MatchMessageHandler] ✅ Score registered successfully for match {}", matchId) << std::endl;
 
         // TODO: Publicar evento de confirmación a ActiveMQ si es necesario
         // publisher->Publish("tournament.matches.score-registered", {...});
 
     } catch (const std::invalid_argument& e) {
-        std::println(stderr, "[MatchMessageHandler] ❌ Validation error: {}", e.what());
+        std::cerr << std::format("[MatchMessageHandler] ❌ Validation error: {}", e.what()) << std::endl;
         // TODO: Publicar mensaje de error
     } catch (const std::exception& e) {
-        std::println(stderr, "[MatchMessageHandler] ❌ Error registering score: {}", e.what());
+        std::cerr << std::format("[MatchMessageHandler] ❌ Error registering score: {}", e.what()) << std::endl;
         // TODO: Publicar mensaje de error
     }
 }
@@ -77,11 +77,11 @@ void MatchMessageHandler::HandleGetMatchesByTournament(const nlohmann::json& mes
 
         int tournamentId = message["tournament_id"];
 
-        std::println("[MatchMessageHandler] Getting matches for tournament {}", tournamentId);
+        std::cout << std::format("[MatchMessageHandler] Getting matches for tournament {}", tournamentId) << std::endl;
 
         auto matches = matchDelegate->GetMatchesByTournament(tournamentId);
 
-        std::println("[MatchMessageHandler] ✅ Found {} matches", matches.size());
+        std::cout << std::format("[MatchMessageHandler] ✅ Found {} matches", matches.size()) << std::endl;
 
         // TODO: Serializar matches a JSON y publicar respuesta
         // nlohmann::json response = {
@@ -92,7 +92,7 @@ void MatchMessageHandler::HandleGetMatchesByTournament(const nlohmann::json& mes
         // publisher->Publish("tournament.matches.list", response.dump());
 
     } catch (const std::exception& e) {
-        std::println(stderr, "[MatchMessageHandler] ❌ Error getting matches: {}", e.what());
+        std::cerr << std::format("[MatchMessageHandler] ❌ Error getting matches: {}", e.what()) << std::endl;
     }
 }
 
@@ -105,17 +105,17 @@ void MatchMessageHandler::HandleGetMatchesByPhase(const nlohmann::json& message)
         int tournamentId = message["tournament_id"];
         std::string phase = message["phase"];
 
-        std::println("[MatchMessageHandler] Getting matches for tournament {} phase {}", 
-                    tournamentId, phase);
+        std::cout << std::format("[MatchMessageHandler] Getting matches for tournament {} phase {}", 
+                    tournamentId, phase) << std::endl;
 
         auto matches = matchDelegate->GetMatchesByPhase(tournamentId, phase);
 
-        std::println("[MatchMessageHandler] ✅ Found {} matches in phase {}", matches.size(), phase);
+        std::cout << std::format("[MatchMessageHandler] ✅ Found {} matches in phase {}", matches.size(), phase) << std::endl;
 
         // TODO: Publicar respuesta
 
     } catch (const std::exception& e) {
-        std::println(stderr, "[MatchMessageHandler] ❌ Error getting matches by phase: {}", e.what());
+        std::cerr << std::format("[MatchMessageHandler] ❌ Error getting matches by phase: {}", e.what()) << std::endl;
     }
 }
 
@@ -127,16 +127,16 @@ void MatchMessageHandler::HandleGetMatchesByGroup(const nlohmann::json& message)
 
         int groupId = message["group_id"];
 
-        std::println("[MatchMessageHandler] Getting matches for group {}", groupId);
+        std::cout << std::format("[MatchMessageHandler] Getting matches for group {}", groupId) << std::endl;
 
         auto matches = matchDelegate->GetMatchesByGroup(groupId);
 
-        std::println("[MatchMessageHandler] ✅ Found {} matches in group", matches.size());
+        std::cout << std::format("[MatchMessageHandler] ✅ Found {} matches in group", matches.size()) << std::endl;
 
         // TODO: Publicar respuesta
 
     } catch (const std::exception& e) {
-        std::println(stderr, "[MatchMessageHandler] ❌ Error getting matches by group: {}", e.what());
+        std::cerr << std::format("[MatchMessageHandler] ❌ Error getting matches by group: {}", e.what()) << std::endl;
     }
 }
 

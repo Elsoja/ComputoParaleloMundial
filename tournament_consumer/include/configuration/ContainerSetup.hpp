@@ -9,7 +9,8 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <memory>
-#include <print>
+#include <format>
+#include <iostream>
 
 #include "configuration/DatabaseConfiguration.hpp"
 #include "cms/ConnectionManager.hpp"
@@ -105,7 +106,7 @@ namespace config {
         builder.registerType<delegate::MatchDelegate>()
             .singleInstance();
 
-        std::println("✅ Container configured successfully");
+        std::cout << "✅ Container configured successfully" << std::endl;
         
         return builder.build();
     }
